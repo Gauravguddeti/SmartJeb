@@ -81,17 +81,17 @@ const Export = () => {
       switch (exportType) {
         case 'csv':
           content = generateCSV(filteredData);
-          filename = `pennylog-expenses-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+          filename = `smartjeb-expenses-${format(new Date(), 'yyyy-MM-dd')}.csv`;
           type = 'text/csv';
           break;
         case 'json':
           content = generateJSON(filteredData);
-          filename = `pennylog-expenses-${format(new Date(), 'yyyy-MM-dd')}.json`;
+          filename = `smartjeb-expenses-${format(new Date(), 'yyyy-MM-dd')}.json`;
           type = 'application/json';
           break;
         case 'summary':
           content = generateSummaryReport(filteredData);
-          filename = `pennylog-summary-${format(new Date(), 'yyyy-MM-dd')}.json`;
+          filename = `smartjeb-summary-${format(new Date(), 'yyyy-MM-dd')}.json`;
           type = 'application/json';
           break;
         default:
@@ -157,15 +157,15 @@ const Export = () => {
     };
     
     // Create a simple summary text for sharing
-    const shareText = `💰 My PennyLog Summary\\n\\n` +
+    const shareText = `💰 My SmartJeb Summary\\n\\n` +
       `📅 Period: ${dateRange}\\n` +
       `💸 Total Expenses: ${formatCurrency(summary.total)}\\n` +
       `📊 Number of Transactions: ${summary.count}\\n\\n` +
-      `Track your expenses with PennyLog! 🚀`;
+      `Track your expenses with SmartJeb! 🚀`;
 
     if (navigator.share) {
       navigator.share({
-        title: 'My PennyLog Summary',
+        title: 'My SmartJeb Summary',
         text: shareText,
         url: window.location.origin
       });
@@ -182,38 +182,38 @@ const Export = () => {
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
       <div className="animate-slide-up">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-primary-600 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 dark:from-gray-100 to-primary-600 bg-clip-text text-transparent">
           Export & Share
         </h2>
-        <p className="text-gray-600 font-medium mt-1">Export your expense data and share insights</p>
+        <p className="text-gray-600 dark:text-gray-300 font-medium mt-1">Export your expense data and share insights</p>
       </div>
 
       {/* Summary Card */}
-      <div className="bg-gradient-to-br from-primary-50 to-indigo-100 rounded-2xl p-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+      <div className="bg-gradient-to-br from-primary-50 to-indigo-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
-            <div className="text-3xl font-bold text-primary-600">{filteredExpenses.length}</div>
-            <div className="text-sm text-gray-600 font-medium">Total Expenses</div>
+            <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">{filteredExpenses.length}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">Total Expenses</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-primary-600">{formatCurrency(totalAmount)}</div>
-            <div className="text-sm text-gray-600 font-medium">Total Amount</div>
+            <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">{formatCurrency(totalAmount)}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">Total Amount</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-primary-600">
+            <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">
               {filteredExpenses.length > 0 ? formatCurrency(totalAmount / filteredExpenses.length) : '₹0'}
             </div>
-            <div className="text-sm text-gray-600 font-medium">Average Expense</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">Average Expense</div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Export Section */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-gray-200/50 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+        <div className="card p-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-center gap-3 mb-6">
-            <div className="bg-gradient-to-br from-green-100 to-green-200 p-2 rounded-xl">
-              <Download className="w-5 h-5 text-green-600" />
+            <div className="bg-gradient-to-br from-green-100 to-green-200 dark:from-green-800 dark:to-green-700 p-2 rounded-xl">
+              <Download className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Export Data</h3>
           </div>
@@ -221,11 +221,11 @@ const Export = () => {
           <div className="space-y-4">
             {/* Date Range Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Time Period</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time Period</label>
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option value="all">All Time</option>
                 <option value="today">Today</option>
@@ -236,9 +236,9 @@ const Export = () => {
 
             {/* Export Format */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Export Format</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Export Format</label>
               <div className="space-y-2">
-                <label className="flex items-center p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                <label className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                   <input
                     type="radio"
                     value="csv"
@@ -246,12 +246,12 @@ const Export = () => {
                     onChange={(e) => setExportType(e.target.value)}
                     className="mr-3"
                   />
-                  <FileText className="w-4 h-4 mr-2 text-gray-500" />
-                  <span className="font-medium">CSV File</span>
-                  <span className="ml-auto text-xs text-gray-500">For Excel/Sheets</span>
+                  <FileText className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                  <span className="font-medium text-gray-900 dark:text-gray-100">CSV File</span>
+                  <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">For Excel/Sheets</span>
                 </label>
                 
-                <label className="flex items-center p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                <label className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                   <input
                     type="radio"
                     value="json"
@@ -259,12 +259,12 @@ const Export = () => {
                     onChange={(e) => setExportType(e.target.value)}
                     className="mr-3"
                   />
-                  <BarChart3 className="w-4 h-4 mr-2 text-gray-500" />
-                  <span className="font-medium">JSON Data</span>
-                  <span className="ml-auto text-xs text-gray-500">Raw data</span>
+                  <BarChart3 className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                  <span className="font-medium text-gray-900 dark:text-gray-100">JSON Data</span>
+                  <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">Raw data</span>
                 </label>
                 
-                <label className="flex items-center p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                <label className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                   <input
                     type="radio"
                     value="summary"
@@ -272,9 +272,9 @@ const Export = () => {
                     onChange={(e) => setExportType(e.target.value)}
                     className="mr-3"
                   />
-                  <Calendar className="w-4 h-4 mr-2 text-gray-500" />
-                  <span className="font-medium">Summary Report</span>
-                  <span className="ml-auto text-xs text-gray-500">With analytics</span>
+                  <Calendar className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                  <span className="font-medium text-gray-900 dark:text-gray-100">Summary Report</span>
+                  <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">With analytics</span>
                 </label>
               </div>
             </div>
@@ -302,16 +302,16 @@ const Export = () => {
         {/* Share & Import Section */}
         <div className="space-y-6">
           {/* Share Section */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-gray-200/50 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+          <div className="card p-6 animate-slide-up" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-2 rounded-xl">
-                <Share2 className="w-5 h-5 text-blue-600" />
+              <div className="bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-800 dark:to-blue-700 p-2 rounded-xl">
+                <Share2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Share Summary</h3>
             </div>
 
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">Share your expense summary on social media or with friends.</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Share your expense summary on social media or with friends.</p>
               
               <button
                 onClick={generateShareableLink}
@@ -324,16 +324,16 @@ const Export = () => {
           </div>
 
           {/* Import Section */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-gray-200/50 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+          <div className="card p-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-purple-100 to-purple-200 p-2 rounded-xl">
-                <Upload className="w-5 h-5 text-purple-600" />
+              <div className="bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-800 dark:to-purple-700 p-2 rounded-xl">
+                <Upload className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Import Data</h3>
             </div>
 
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">Import expense data from CSV or JSON files.</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Import expense data from CSV or JSON files.</p>
               
               <label className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:from-purple-600 hover:to-purple-700 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer">
                 <Upload className="w-4 h-4" />
@@ -346,7 +346,7 @@ const Export = () => {
                 />
               </label>
               
-              <p className="text-xs text-gray-500">Supported formats: CSV, JSON</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Supported formats: CSV, JSON</p>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 /**
- * ExpenseContext - Global state management for PennyLog
+ * ExpenseContext - Global state management for SmartJeb
  * Provides expense data and operations to all components
  */
 

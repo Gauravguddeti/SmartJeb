@@ -107,7 +107,7 @@ const Achievements = () => {
 
   // Check achievements
   useEffect(() => {
-    const savedAchievements = JSON.parse(localStorage.getItem('pennylog-achievements') || '[]');
+    const savedAchievements = JSON.parse(localStorage.getItem('smartjeb-achievements') || '[]');
     const newlyUnlocked = [];
 
     achievementList.forEach(achievement => {
@@ -135,7 +135,7 @@ const Achievements = () => {
 
     if (newlyUnlocked.length > 0) {
       setUnlockedToday(prev => [...prev, ...newlyUnlocked]);
-      localStorage.setItem('pennylog-achievements', JSON.stringify(savedAchievements));
+      localStorage.setItem('smartjeb-achievements', JSON.stringify(savedAchievements));
     }
 
     setAchievements(savedAchievements);
@@ -278,7 +278,7 @@ const Achievements = () => {
           ) : unlockedCount < totalCount ? (
             "Excellent progress! You're almost there - just a few more to go!"
           ) : (
-            "🎊 Congratulations! You've unlocked all achievements! You're a PennyLog master!"
+            "🎊 Congratulations! You've unlocked all achievements! You're a SmartJeb master!"
           )}
         </p>
       </div>

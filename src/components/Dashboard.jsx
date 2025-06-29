@@ -257,12 +257,12 @@ const Dashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-300">
             Overview of your expenses for {filters.dateRange === 'today' ? 'today' : filters.dateRange}
           </p>
         </div>
-        <div className="flex items-center space-x-2 text-sm text-gray-500">
+        <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
           <Calendar className="w-4 h-4" />
           <span>{format(new Date(), 'MMM dd, yyyy')}</span>
         </div>
@@ -274,8 +274,8 @@ const Dashboard = () => {
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Spending</p>
-              <p className="text-2xl font-bold text-gray-900">₹{stats.total.toFixed(0)}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Spending</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">₹{stats.total.toFixed(0)}</p>
             </div>
             <div className="p-3 bg-primary-50 rounded-lg">
               <DollarSign className="w-6 h-6 text-primary-500" />
@@ -299,8 +299,8 @@ const Dashboard = () => {
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Transactions</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.count}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Transactions</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.count}</p>
             </div>
             <div className="p-3 bg-success-50 rounded-lg">
               <CreditCard className="w-6 h-6 text-success-500" />
@@ -315,8 +315,8 @@ const Dashboard = () => {
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Top Category</p>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Top Category</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 {Object.keys(stats.categoryTotals).length > 0
                   ? Object.entries(stats.categoryTotals).reduce((a, b) => 
                       stats.categoryTotals[a[0]] > stats.categoryTotals[b[0]] ? a : b
@@ -342,8 +342,8 @@ const Dashboard = () => {
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">This Week</p>
-              <p className="text-2xl font-bold text-gray-900">₹{thisWeekTotal.toFixed(0)}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">This Week</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">₹{thisWeekTotal.toFixed(0)}</p>
             </div>
             <div className="p-3 bg-purple-50 rounded-lg">
               <Calendar className="w-6 h-6 text-purple-500" />
@@ -359,7 +359,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Category Breakdown */}
         <div className="card p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Spending by Category</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Spending by Category</h3>
           {categoryData.length > 0 ? (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -391,7 +391,7 @@ const Dashboard = () => {
 
         {/* Daily Spending Trend */}
         <div className="card p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Last 7 Days</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Last 7 Days</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={last7Days}>
@@ -416,7 +416,7 @@ const Dashboard = () => {
 
       {/* Recent Expenses */}
       <div className="card p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Expenses</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Recent Expenses</h3>
         {expenses.length > 0 ? (
           <div className="space-y-3">
             {expenses.slice(0, 5).map((expense) => (
@@ -434,7 +434,7 @@ const Dashboard = () => {
                     </span>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-gray-900 dark:text-gray-100">
                       {expense.note || expense.vendor || 'Expense'}
                     </p>
                     <p className="text-sm text-gray-500">
@@ -443,14 +443,14 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900">₹{expense.amount}</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">₹{expense.amount}</p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">
-            <CreditCard className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <CreditCard className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-500" />
             <p>No expenses found</p>
             <p className="text-sm">Add your first expense to see it here</p>
           </div>

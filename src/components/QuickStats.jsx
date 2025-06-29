@@ -111,7 +111,7 @@ const QuickStats = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Quick Stats</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Quick Stats</h2>
         <div className="flex items-center space-x-2 text-sm text-gray-500">
           <Clock className="w-4 h-4" />
           <span>Real-time</span>

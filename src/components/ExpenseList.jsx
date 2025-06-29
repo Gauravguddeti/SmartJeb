@@ -59,10 +59,10 @@ const ExpenseList = ({ onAddExpense }) => {
       {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 animate-slide-up">
         <div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-primary-600 bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 dark:from-gray-100 to-primary-600 bg-clip-text text-transparent">
             Your Expenses
           </h2>
-          <p className="text-gray-600 font-medium mt-1">Track and manage your daily expenses</p>
+          <p className="text-gray-600 dark:text-gray-300 font-medium mt-1">Track and manage your daily expenses</p>
         </div>
         
         <div className="flex gap-3">
@@ -155,11 +155,11 @@ const ExpenseList = ({ onAddExpense }) => {
           </div>
         ) : filteredExpenses.length === 0 ? (
           <div className="text-center py-20 animate-fade-in">
-            <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 animate-float">
-              <FileText className="h-12 w-12 text-gray-400" />
+            <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 animate-float">
+              <FileText className="h-12 w-12 text-gray-400 dark:text-gray-300" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No expenses found</h3>
-            <p className="text-gray-500 font-medium mb-8 max-w-md mx-auto">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">No expenses found</h3>
+            <p className="text-gray-500 dark:text-gray-400 font-medium mb-8 max-w-md mx-auto">
               Get started by adding your first expense and begin tracking your spending habits.
             </p>
             <button 

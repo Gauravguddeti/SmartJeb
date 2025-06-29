@@ -7,6 +7,12 @@ import { MessageCircle, X, Send, Sparkles, Bot, User } from 'lucide-react';
 const AIChatbot = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [conversationContext, setConversationContext] = useState({
+    lastTopic: null,
+    waitingForGoal: false,
+    savingsAmount: null,
+    timeframe: null
+  });
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -27,16 +33,119 @@ const AIChatbot = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Enhanced AI responses with more humanized and comprehensive answers
+  // Enhanced AI responses with context awareness and better NLP
   const generateResponse = (message) => {
     const lowerMessage = message.toLowerCase();
+    
+    // Context-aware responses for follow-ups
+    if (conversationContext.waitingForGoal) {
+      // User is responding to "What's this for?" question
+      if (lowerMessage.includes('monitor') || lowerMessage.includes('computer') || lowerMessage.includes('screen') || lowerMessage.includes('display')) {
+        setConversationContext({...conversationContext, waitingForGoal: false, lastTopic: 'monitor'});
+        return "Perfect! A monitor is a great investment! 🖥️ Here's your tailored savings plan for ₹10,000 monitor:\n\n💡 **Monitor-Specific Strategy:**\n• **Research first**: Check for sales, discounts, or upcoming festivals\n• **Compare models**: Make a wishlist of 2-3 monitors to track prices\n• **Timing advantage**: Electronics often go on sale during festivals\n\n🎯 **Accelerated Savings Tips:**\n\n**Week 1-4: Tech-focused savings**\n• Skip gaming purchases/subscriptions: ₹500-800/week\n• Reduce streaming services: ₹200-400/week\n• Eat home more (invest food money in monitor): ₹600-900/week\n\n**Week 5-8: Side income boost**\n• Sell old electronics/gadgets: ₹1,000-3,000\n• Freelance your skills online: ₹2,000-5,000\n• Part-time gigs on weekends: ₹1,500-3,000\n\n**Week 9-12: Final push**\n• Monitor price tracking (buy during sales): Save 10-20%\n• Use cashback apps for purchase: ₹200-500 back\n• Consider EMI if 0% interest available\n\n🔥 **Pro tip**: Follow the monitor on price tracking websites. You might get it for ₹8,000-9,000 during sales!\n\nWhat size/type of monitor are you looking at? Gaming, work, or general use?";
+      }
+      
+      if (lowerMessage.includes('bike') || lowerMessage.includes('motorcycle') || lowerMessage.includes('scooter')) {
+        setConversationContext({...conversationContext, waitingForGoal: false, lastTopic: 'vehicle'});
+        return "A bike/scooter! Smart choice for transportation! 🏍️ Here's your vehicle savings strategy:\n\n**Transportation-focused savings plan:**\n• Use current transport savings toward goal\n• Calculate monthly transport costs vs EMI benefits\n• Consider used vehicles for better value\n• Factor in insurance, registration costs\n\nWould you like me to help calculate the total cost including insurance and registration?";
+      }
+      
+      if (lowerMessage.includes('phone') || lowerMessage.includes('mobile') || lowerMessage.includes('smartphone')) {
+        setConversationContext({...conversationContext, waitingForGoal: false, lastTopic: 'phone'});
+        return "A new phone! 📱 Here's your smartphone savings strategy:\n\n**Phone-specific tips:**\n• Wait for festival sales (save 15-25%)\n• Consider exchange offers for old phone\n• Compare online vs offline prices\n• Check for bank offers and cashback\n\nWhat type of phone are you considering? Budget, mid-range, or flagship?";
+      }
+      
+      if (lowerMessage.includes('laptop') || lowerMessage.includes('computer')) {
+        setConversationContext({...conversationContext, waitingForGoal: false, lastTopic: 'laptop'});
+        return "A laptop! Great for productivity! 💻 Here's your laptop savings plan:\n\n**Laptop-focused strategy:**\n• Student discounts if applicable\n• Refurbished options for better value\n• Specification research to avoid overpaying\n• Extended warranty considerations\n\nWhat will you primarily use it for? Work, gaming, or general use?";
+      }
+      
+      if (lowerMessage.includes('trip') || lowerMessage.includes('travel') || lowerMessage.includes('vacation') || lowerMessage.includes('holiday')) {
+        setConversationContext({...conversationContext, waitingForGoal: false, lastTopic: 'travel'});
+        return "A trip! Travel is the best investment! ✈️ Here's your travel savings strategy:\n\n**Travel-focused savings:**\n• Book in advance for better deals\n• Flexible dates for cheaper flights\n• Budget accommodation research\n• Local food vs expensive restaurants\n\nWhere are you planning to go? Domestic or international?";
+      }
+      
+      if (lowerMessage.includes('emergency') || lowerMessage.includes('fund') || lowerMessage.includes('backup')) {
+        setConversationContext({...conversationContext, waitingForGoal: false, lastTopic: 'emergency'});
+        return "Emergency fund! You're being incredibly smart! 🛡️ This is the BEST financial decision:\n\n**Emergency fund strategy:**\n• Keep in high-yield savings account\n• Don't invest in risky assets\n• Aim for 3-6 months of expenses eventually\n• This ₹10,000 is a great start!\n\n**Motivation**: This money will give you peace of mind and financial security. Every rupee saved here is protecting your future!";
+      }
+      
+      // Enhanced detection for simple follow-ups like "for a monitor"
+      if (lowerMessage.startsWith('for ') || lowerMessage.startsWith('for a ') || lowerMessage.startsWith('for an ')) {
+        // Extract the item after "for"
+        const goalItem = lowerMessage.replace(/^for (a |an )?/, '').trim();
+        
+        if (goalItem.includes('monitor') || goalItem.includes('screen') || goalItem.includes('display')) {
+          setConversationContext({...conversationContext, waitingForGoal: false, lastTopic: 'monitor'});
+          return "Awesome! A monitor - excellent choice! 🖥️ Here's your monitor-specific savings plan:\n\n💡 **Smart Monitor Shopping:**\n• Research during sales seasons (get 15-25% off)\n• Compare 24\", 27\", or 32\" based on your needs\n• Gaming vs work monitors have different priorities\n• Check for dead pixels before buying\n\n🎯 **Monitor Savings Strategy:**\n\n**Immediate actions:**\n• Create price alerts on Amazon/Flipkart\n• Follow tech deal channels on Telegram\n• Check offline stores for demo pieces (often discounted)\n\n**Weekly savings plan:**\n• Week 1-4: Cut gaming/entertainment expenses (₹3,000)\n• Week 5-8: Side hustles/selling old stuff (₹3,500)\n• Week 9-12: Final push + timing the purchase (₹3,500)\n\n**Purchase timing:** Wait for upcoming sales or festivals to maximize savings!\n\nWhat type of monitor work are you planning - gaming, coding, design, or general use?";
+        }
+        
+        if (goalItem.includes('phone') || goalItem.includes('mobile')) {
+          setConversationContext({...conversationContext, waitingForGoal: false, lastTopic: 'phone'});
+          return "A phone! 📱 Smart timing - let me help you save effectively:\n\n**Phone-specific savings hacks:**\n• Wait for festival sales or new model launches\n• Your old phone exchange value matters\n• Bank offers can save ₹1,000-3,000\n• Compare online vs offline prices\n\nWhat's your target phone? Budget (₹10k-15k), mid-range (₹15k-30k), or premium?";
+        }
+        
+        if (goalItem.includes('laptop') || goalItem.includes('computer')) {
+          setConversationContext({...conversationContext, waitingForGoal: false, lastTopic: 'laptop'});
+          return "A laptop! 💻 Great investment in yourself. Here's how to save smart:\n\n**Laptop savings strategy:**\n• Student discounts (if applicable) save 5-10%\n• Refurbished/certified pre-owned options\n• Timing: Buy during back-to-school sales\n• Specs research prevents overspending\n\nWhat's the primary use? Programming, gaming, general work, or content creation?";
+        }
+        
+        // Generic response for unrecognized "for X" items
+        setConversationContext({...conversationContext, waitingForGoal: false, lastTopic: 'general'});
+        return `Perfect! Saving for ${goalItem} - I love specific goals! 🎯\n\n**Your personalized ₹10,000 strategy:**\n• Research the best time to buy (sales, discounts)\n• Set up price alerts if it's available online\n• Consider if there are seasonal patterns for pricing\n• Factor in any additional costs (accessories, etc.)\n\n**3-month savings breakdown:**\n• Month 1: ₹3,333 (focus on cutting unnecessary expenses)\n• Month 2: ₹3,333 (find ways to earn extra)\n• Month 3: ₹3,334 (final push + smart purchase timing)\n\nNeed specific tips for finding the best deals on ${goalItem}?`;
+      }
+      
+      // Generic goal response for unrecognized items
+      setConversationContext({...conversationContext, waitingForGoal: false, lastTopic: 'general'});
+      return `Awesome goal! 🎯 Here's your customized savings plan for ${message}:\n\n**Smart saving approach:**\n• Research the best deals and timing\n• Set up a dedicated savings account for this goal\n• Track progress weekly to stay motivated\n• Consider if there are seasonal discounts\n\n**Additional tips:**\n• Look for online reviews before purchasing\n• Compare prices across multiple platforms\n• See if you can get better value by waiting\n• Factor in any additional costs (accessories, maintenance)\n\nHaving a specific goal makes saving so much easier! You've got this! 💪\n\nNeed help with anything else about reaching this goal?`;
+    }
+    
+    // Enhanced follow-up question handling based on conversation context
+    if (conversationContext.lastTopic && !conversationContext.waitingForGoal) {
+      // Monitor-related follow-ups
+      if (conversationContext.lastTopic === 'monitor') {
+        if (lowerMessage.includes('gaming') || lowerMessage.includes('game')) {
+          return "Gaming monitor! 🎮 Perfect choice! Here's what to focus on:\n\n**Gaming monitor priorities:**\n• **High refresh rate** (144Hz minimum, 240Hz ideal)\n• **Low input lag** (1ms response time)\n• **Resolution vs performance** (1080p for high FPS, 1440p for quality)\n• **Adaptive sync** (FreeSync/G-Sync)\n\n**Budget allocation for ₹10,000:**\n• ₹8,000-9,000 for monitor (during sales)\n• ₹1,000-2,000 for accessories (arm mount, cables)\n\n**Best time to buy:** During gaming sales events or new GPU launches when older monitors get discounted!\n\nWhat games do you mainly play? Competitive FPS or single-player adventures?";
+        }
+        
+        if (lowerMessage.includes('work') || lowerMessage.includes('office') || lowerMessage.includes('productivity')) {
+          return "Work monitor! 💼 Excellent productivity investment:\n\n**Work monitor priorities:**\n• **Size matters** (27\" minimum for productivity)\n• **Resolution** (1440p sweet spot for text clarity)\n• **Ergonomics** (adjustable height/tilt)\n• **Eye comfort** (blue light reduction, flicker-free)\n\n**Productivity features to look for:**\n• USB-C connectivity (single cable setup)\n• Multiple inputs (switch between devices)\n• Built-in USB hub\n• Pivot capability (portrait mode)\n\n**ROI calculation:** A good monitor improves productivity by 20-30%. If you earn ₹20,000/month, this pays for itself in increased efficiency!\n\nWhat type of work do you do? Programming, design, data analysis, or general office tasks?";
+        }
+        
+        if (lowerMessage.includes('size') || lowerMessage.includes('24') || lowerMessage.includes('27') || lowerMessage.includes('32')) {
+          return "Monitor size - crucial decision! 📏\n\n**Size guide for ₹10,000 budget:**\n\n**24\" (₹6,000-8,000):**\n• Perfect for small desks\n• Good for competitive gaming\n• Less strain for close viewing\n• More budget left for higher refresh rate\n\n**27\" (₹8,000-12,000):**\n• Sweet spot for most users\n• Great for productivity + gaming\n• 1440p looks amazing at this size\n• Most popular choice\n\n**32\" (₹12,000+):**\n• Might exceed budget unless on heavy discount\n• Awesome for immersive gaming\n• Great for content creation\n• Consider curved at this size\n\n**My recommendation:** 27\" 1440p during sales for ₹9,000-10,000. Best bang for buck!\n\nHow far do you sit from your desk? That affects the ideal size too!";
+        }
+      }
+      
+      // Phone-related follow-ups
+      if (conversationContext.lastTopic === 'phone') {
+        if (lowerMessage.includes('budget') || lowerMessage.includes('cheap') || lowerMessage.includes('affordable')) {
+          return "Budget phone strategy! 📱 Smart approach:\n\n**Best budget phones for ₹10,000:**\n• Redmi/Realme series (great value)\n• Samsung Galaxy M series\n• Consider 6-month old flagships\n\n**Budget phone savings tips:**\n• Buy during festival sales (save ₹1,500-2,500)\n• Consider exchange offers\n• Check for bank discounts\n• Older generation flagships > new budget phones\n\n**What to prioritize in budget:**\n• Good processor (daily performance)\n• Decent camera (if you take photos)\n• Battery life (heavy usage)\n• Software updates (longevity)\n\nAny specific features you can't compromise on? Camera, gaming, battery life?";
+        }
+        
+        if (lowerMessage.includes('camera') || lowerMessage.includes('photo')) {
+          return "Camera-focused phone! 📸 Here's how to maximize your budget:\n\n**Camera priorities for ₹10,000:**\n• Look for phones with larger sensors\n• Night mode capability\n• Optical image stabilization (OIS)\n• Multiple lenses (ultra-wide, macro)\n\n**Photography phone tips:**\n• Pixel phones often have best computational photography\n• iPhone SE (older model) might be available in budget\n• Samsung A-series for versatile camera setup\n\n**Timing strategy:**\n• Buy when new camera phones launch (older ones get discounted)\n• Check for camera-focused sales events\n\nDo you mainly take portraits, landscapes, or need good video recording?";
+        }
+      }
+      
+      // Laptop-related follow-ups
+      if (conversationContext.lastTopic === 'laptop') {
+        if (lowerMessage.includes('programming') || lowerMessage.includes('coding') || lowerMessage.includes('development')) {
+          return "Programming laptop! 💻 Here's your developer-focused strategy:\n\n**Programming priorities for ₹10,000:**\n• **RAM**: 8GB minimum (16GB ideal for multitasking)\n• **SSD**: Faster than HDD for code compilation\n• **Processor**: Intel i5/AMD Ryzen 5 minimum\n• **Keyboard**: Good typing experience matters!\n\n**Developer laptop tips:**\n• Refurbished ThinkPads are excellent value\n• Consider business laptops (built for durability)\n• Check for student discounts\n• Linux compatibility if you prefer open source\n\n**Budget extension idea:** ₹10,000 might be tight for new. Consider:\n• ₹15,000 budget with ₹5,000 from side projects\n• Refurbished business laptops\n• EMI options with 0% interest\n\nWhat programming languages/frameworks do you work with?";
+        }
+        
+        if (lowerMessage.includes('gaming') || lowerMessage.includes('game')) {
+          return "Gaming laptop for ₹10,000? 🎮 Let's be realistic:\n\n**Hard truth:** ₹10,000 won't get you a good gaming laptop. Here are better approaches:\n\n**Option 1: Extend budget**\n• Gaming laptops start around ₹40,000-50,000\n• Save for 6 months instead of 3\n• Consider EMI options\n\n**Option 2: Desktop gaming**\n• ₹10,000 can upgrade an existing desktop\n• Better price-to-performance ratio\n• Upgradeable components\n\n**Option 3: Cloud gaming**\n• Use current laptop + cloud gaming services\n• Much cheaper monthly cost\n• Try before investing in hardware\n\nWhat games do you want to play? I can suggest the minimum specs needed!";
+        }
+      }
+    }
     
     // Greeting responses
     if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
       const greetings = [
         "Hey there! 👋 I'm your personal financial assistant. I'm here to help you with literally anything - money questions, life advice, calculations, or just a friendly chat! What's on your mind today?",
         "Hello! 😊 Great to see you! I'm here to help with whatever you need - whether it's budgeting, saving tips, investment advice, or even just random questions. Fire away!",
-        "Hi bestie! ✨ I'm your AI companion ready to tackle any question you throw at me. Financial planning, life advice, fun facts, calculations - I've got you covered!",
+        "Hi! ✨ I'm your AI companion ready to tackle any question you throw at me. Financial planning, life advice, fun facts, calculations - I've got you covered!",
         "Hey! 🌟 Welcome to SmartJeb! I'm here as your personal assistant for everything - money management, general questions, advice, or just having a conversation. What can I help you with?"
       ];
       return greetings[Math.floor(Math.random() * greetings.length)];
@@ -57,14 +166,30 @@ const AIChatbot = () => {
       return calculationResponses[Math.floor(Math.random() * calculationResponses.length)];
     }
 
-    // More specific patterns for the 10000 question
+    // More specific patterns for the 10000 question - SET CONTEXT FOR FOLLOW-UP
     if ((lowerMessage.includes('10000') || lowerMessage.includes('ten thousand')) && (lowerMessage.includes('3 months') || lowerMessage.includes('3 month'))) {
-      return "Absolutely! Here's your complete plan to save ₹10,000 in 3 months:\n\n💰 **The Math:**\n• **Daily**: ₹111 (₹10,000 ÷ 90 days)\n• **Weekly**: ₹770\n• **Monthly**: ₹3,333\n\n🎯 **Daily Savings Strategies:**\n1. **Food & Drinks** (₹60-80/day)\n   • Cook at home instead of ordering\n   • Carry water bottle (₹20 saved)\n   • Make tea/coffee at home (₹40 saved)\n\n2. **Transportation** (₹30-50/day)\n   • Use bus/metro instead of auto/cab\n   • Walk short distances\n   • Share rides when possible\n\n3. **Small Expenses** (₹20-30/day)\n   • Avoid impulse snacks\n   • Use library instead of buying books\n   • Free entertainment (YouTube vs Netflix)\n\n📱 **Track Progress:**\n• Use SmartJeb to log saved amounts\n• Weekly reviews and adjustments\n• Celebrate milestones (₹2,500, ₹5,000)\n\n🚀 **Motivation:** Every ₹111 saved today gets you closer to your ₹10,000 goal!\n\nWhat's this ₹10,000 for? I can give more specific tips based on your goal! 😊";
+      // Set context to wait for user's goal response
+      setConversationContext({
+        lastTopic: 'savings_plan',
+        waitingForGoal: true,
+        savingsAmount: 10000,
+        timeframe: '3 months'
+      });
+      
+      return "Awesome! ₹10,000 in 3 months is totally doable! 🎯\n\n💰 **Quick Math:**\n• **Daily target**: ₹111 (₹10,000 ÷ 90 days)\n• **Weekly target**: ₹770\n• **Monthly target**: ₹3,333\n\n🚀 **I can give you a super personalized savings strategy!**\n\nWhat's this ₹10,000 for? Tell me your goal and I'll tailor the perfect plan:\n• Monitor/laptop/phone?\n• Trip/vacation?\n• Emergency fund?\n• Something else awesome?\n\nThe more specific you are, the better tips I can give you! 😊";
     }
 
-    // Specific question about wanting 10000
+    // Specific question about wanting 10000 - ALSO SET CONTEXT
     if (lowerMessage.includes('want') && lowerMessage.includes('10000') && lowerMessage.includes('3 month')) {
-      return "I got you! You want ₹10,000 in 3 months - here's your complete action plan:\n\n💰 **The Breakdown:**\n• **₹111 per day** for 90 days = ₹10,000\n• **₹770 per week** (easier to track)\n• **₹3,333 per month**\n\n🎯 **Week-by-Week Strategy:**\n\n**Week 1-2: Food & Beverages**\n• Cook breakfast at home: ₹50/day\n• Carry lunch 3 days: ₹150/day\n• Make coffee/tea at home: ₹40/day\n• Target: ₹1,500 in 2 weeks\n\n**Week 3-4: Transportation**\n• Bus/metro instead of auto: ₹80/day\n• Walk short distances: ₹30/day\n• Share rides: ₹50/day\n• Target: ₹1,500 in 2 weeks\n\n**Week 5-8: Lifestyle Adjustments**\n• Skip one movie night: ₹300\n• Home entertainment: ₹200/week\n• Avoid impulse shopping: ₹500/week\n• Target: ₹2,800 in 4 weeks\n\n**Week 9-12: Final Push**\n• Sell unused items: ₹1,000\n• Freelance/side work: ₹2,000\n• Strict expense tracking: ₹1,200\n• Target: ₹4,200 in 4 weeks\n\n✅ **Total: ₹10,000 achieved!**\n\n💡 **Pro tip:** Start today! Even ₹50 saved today is ₹50 closer to your goal.\n\nWhat's this ₹10,000 for? A goal, emergency fund, or something special? 😊";
+      // Set context to wait for user's goal response
+      setConversationContext({
+        lastTopic: 'savings_plan',
+        waitingForGoal: true,
+        savingsAmount: 10000,
+        timeframe: '3 months'
+      });
+      
+      return "Perfect! You want ₹10,000 in 3 months - I love specific goals! 🎯\n\n💰 **The Math:**\n• **₹111 per day** for 90 days = ₹10,000\n• **₹770 per week** (easier to track weekly)\n• **₹3,333 per month**\n\n✨ **Here's the thing** - I can give you WAY better advice if I know what this is for!\n\n**Tell me your goal:**\n• Gaming setup/monitor?\n• New phone/laptop?\n• Trip somewhere amazing?\n• Emergency fund (smart choice!)?\n• Investment/course?\n• Something else?\n\nOnce you tell me, I'll create a laser-focused savings strategy just for you! What's the goal? 😊";
     }
 
     // Budget and money management

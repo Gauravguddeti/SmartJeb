@@ -17,7 +17,7 @@ const Settings = () => {
 
   // Load settings from localStorage
   useEffect(() => {
-    const savedSettings = localStorage.getItem('pennylog-settings');
+    const savedSettings = localStorage.getItem('smartjeb-settings');
     if (savedSettings) {
       const settings = JSON.parse(savedSettings);
       setDarkMode(settings.darkMode || false);
@@ -46,7 +46,7 @@ const Settings = () => {
       language,
       ...newSettings
     };
-    localStorage.setItem('pennylog-settings', JSON.stringify(settings));
+    localStorage.setItem('smartjeb-settings', JSON.stringify(settings));
   };
 
   const handleDarkModeToggle = () => {
@@ -75,8 +75,8 @@ const Settings = () => {
   const handleClearAllData = () => {
     if (window.confirm('Are you sure you want to delete all expenses? This action cannot be undone.')) {
       clearAllExpenses();
-      localStorage.removeItem('pennylog-goals');
-      localStorage.removeItem('pennylog-settings');
+      localStorage.removeItem('smartjeb-goals');
+      localStorage.removeItem('smartjeb-settings');
       toast.success('All data cleared successfully');
     }
   };
@@ -89,26 +89,26 @@ const Settings = () => {
     <div className="max-w-4xl mx-auto space-y-6 animate-slide-up">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-primary-600 bg-clip-text text-transparent mb-2">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 dark:from-gray-100 to-primary-600 bg-clip-text text-transparent mb-2">
           Settings
         </h1>
-        <p className="text-gray-600">Customize your PennyLog experience</p>
+        <p className="text-gray-600 dark:text-gray-300">Customize your SmartJeb experience</p>
       </div>
 
       {/* Appearance Settings */}
       <div className="card p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center space-x-2">
           <SettingsIcon className="w-5 h-5 text-primary-600" />
           <span>Appearance</span>
         </h2>
         
         <div className="space-y-4">
-          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+          <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center space-x-3">
               {darkMode ? <Moon className="w-5 h-5 text-primary-600" /> : <Sun className="w-5 h-5 text-primary-600" />}
               <div>
-                <div className="font-medium text-gray-900">Dark Mode</div>
-                <div className="text-sm text-gray-500">Switch between light and dark themes</div>
+                <div className="font-medium text-gray-900 dark:text-gray-100">Dark Mode</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Switch between light and dark themes</div>
               </div>
             </div>
             <button
@@ -129,18 +129,18 @@ const Settings = () => {
 
       {/* Notification Settings */}
       <div className="card p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center space-x-2">
           <Bell className="w-5 h-5 text-primary-600" />
           <span>Notifications</span>
         </h2>
         
         <div className="space-y-4">
-          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+          <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center space-x-3">
               {notifications ? <Bell className="w-5 h-5 text-primary-600" /> : <BellOff className="w-5 h-5 text-gray-400" />}
               <div>
-                <div className="font-medium text-gray-900">Push Notifications</div>
-                <div className="text-sm text-gray-500">Get notified about important updates</div>
+                <div className="font-medium text-gray-900 dark:text-gray-100">Push Notifications</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Get notified about important updates</div>
               </div>
             </div>
             <button
@@ -157,12 +157,12 @@ const Settings = () => {
             </button>
           </div>
           
-          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+          <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center space-x-3">
               <Smartphone className="w-5 h-5 text-primary-600" />
               <div>
-                <div className="font-medium text-gray-900">Daily Reminders</div>
-                <div className="text-sm text-gray-500">Get reminded to log your expenses</div>
+                <div className="font-medium text-gray-900 dark:text-gray-100">Daily Reminders</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Get reminded to log your expenses</div>
               </div>
             </div>
             <button
@@ -188,7 +188,7 @@ const Settings = () => {
 
       {/* Data Management */}
       <div className="card p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center space-x-2">
           <Shield className="w-5 h-5 text-primary-600" />
           <span>Data Management</span>
         </h2>
@@ -223,14 +223,14 @@ const Settings = () => {
 
       {/* About */}
       <div className="card p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center space-x-2">
           <User className="w-5 h-5 text-primary-600" />
-          <span>About PennyLog</span>
+          <span>About SmartJeb</span>
         </h2>
         
-        <div className="space-y-3 text-gray-600">
+        <div className="space-y-3 text-gray-600 dark:text-gray-300">
           <p>
-            PennyLog is an AI-assisted expense journal that helps you track your daily expenses with smart categorization and insights.
+            SmartJeb is an AI-assisted expense journal that helps you track your daily expenses with smart categorization and insights.
           </p>
           <p className="text-sm">
             <strong>Features:</strong> AI-powered categorization, Visual analytics, Goal tracking, Data export, Offline functionality

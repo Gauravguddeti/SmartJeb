@@ -12,7 +12,7 @@ const Welcome = ({ onComplete }) => {
 
   // Check if user should see welcome screen
   useEffect(() => {
-    const hasSeenWelcome = localStorage.getItem('pennylog-welcome-seen');
+    const hasSeenWelcome = localStorage.getItem('smartjeb-welcome-seen');
     const hasExpenses = expenses.length > 0;
     
     if (hasSeenWelcome || hasExpenses) {
@@ -23,7 +23,7 @@ const Welcome = ({ onComplete }) => {
 
   const steps = [
     {
-      title: "Welcome to PennyLog! 🎉",
+      title: "Welcome to SmartJeb! 🎉",
       subtitle: "Your smart expense tracking companion",
       description: "Track your daily expenses with AI-powered insights and beautiful analytics. Let's get you started!",
       icon: PiggyBank,
@@ -102,7 +102,7 @@ const Welcome = ({ onComplete }) => {
   };
 
   const handleComplete = () => {
-    localStorage.setItem('pennylog-welcome-seen', 'true');
+    localStorage.setItem('smartjeb-welcome-seen', 'true');
     setIsVisible(false);
     onComplete?.();
   };

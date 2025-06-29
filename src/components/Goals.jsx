@@ -23,7 +23,7 @@ const Goals = () => {
 
   // Load goals from localStorage
   useEffect(() => {
-    const savedGoals = localStorage.getItem('pennylog-goals');
+    const savedGoals = localStorage.getItem('smartjeb-goals');
     if (savedGoals) {
       setGoals(JSON.parse(savedGoals));
     }
@@ -31,7 +31,7 @@ const Goals = () => {
 
   // Save goals to localStorage
   useEffect(() => {
-    localStorage.setItem('pennylog-goals', JSON.stringify(goals));
+    localStorage.setItem('smartjeb-goals', JSON.stringify(goals));
   }, [goals]);
 
   const handleAddGoal = () => {
@@ -121,10 +121,10 @@ const Goals = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 animate-slide-up">
         <div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-primary-600 bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 dark:from-gray-100 to-primary-600 bg-clip-text text-transparent">
             Goals & Budgets
           </h2>
-          <p className="text-gray-600 font-medium mt-1">Set spending limits and track your progress</p>
+          <p className="text-gray-600 dark:text-gray-300 font-medium mt-1">Set spending limits and track your progress</p>
         </div>
         
         <button

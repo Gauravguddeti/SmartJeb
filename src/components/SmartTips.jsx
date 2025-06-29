@@ -23,7 +23,7 @@ const SmartTips = () => {
           type: 'welcome',
           icon: Star,
           color: 'blue',
-          title: 'Welcome to PennyLog!',
+          title: 'Welcome to SmartJeb!',
           description: 'Start tracking your expenses to get personalized insights and tips.',
           action: 'Add your first expense to begin'
         }

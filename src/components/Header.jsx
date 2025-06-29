@@ -22,10 +22,10 @@ const Header = ({ activeTab, setActiveTab, onAddExpense }) => {
             <img 
               src="/logo.svg" 
               alt="SmartJeb Logo" 
-              className="w-12 h-12"
+              className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28"
             />
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 SmartJeb
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">You buy. We judge. Gently.</p>

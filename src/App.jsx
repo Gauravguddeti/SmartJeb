@@ -23,7 +23,7 @@ function App() {
 
   // Initialize dark mode on app start
   useEffect(() => {
-    const savedSettings = localStorage.getItem('pennylog-settings');
+    const savedSettings = localStorage.getItem('smartjeb-settings');
     if (savedSettings) {
       const settings = JSON.parse(savedSettings);
       if (settings.darkMode) {
@@ -54,7 +54,7 @@ function App() {
 
   return (
     <ExpenseProvider>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 animate-fade-in transition-colors duration-300">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 animate-fade-in transition-colors duration-300 flex flex-col">
         {/* Welcome Screen */}
         {showWelcome && (
           <Welcome onComplete={() => setShowWelcome(false)} />
@@ -92,7 +92,7 @@ function App() {
         />
 
         {/* Main content */}
-        <main className="container mx-auto px-4 py-6 pb-20 md:pb-6">
+        <main className="container mx-auto px-4 py-6 pb-20 md:pb-6 flex-grow">
           <div className="animate-slide-up">
             {renderActiveComponent()}
           </div>
@@ -116,7 +116,7 @@ function App() {
         />
 
         {/* Footer */}
-        <footer className="hidden md:block bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-t border-gray-200/50 dark:border-gray-700/50 py-6 mt-12 transition-colors duration-300">
+        <footer className="hidden md:block bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-t border-gray-200/50 dark:border-gray-700/50 py-6 transition-colors duration-300 mt-auto">
           <div className="container mx-auto px-4 text-center space-y-3">
             <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
               Made with <span className="text-red-500 animate-pulse-gentle text-lg">♥</span> by{' '}

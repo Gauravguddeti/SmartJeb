@@ -18,17 +18,17 @@ const Header = ({ activeTab, setActiveTab, onAddExpense }) => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Title */}
-          <div className="flex items-center space-x-3 group">
-            <div className="bg-gradient-to-br from-primary-500 to-primary-600 p-2 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 animate-glow">
+          <div className="flex items-center space-x-4 group">
+            <div className="bg-gradient-to-br from-primary-500 to-primary-600 p-3 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
               <img 
                 src="/logo.svg" 
-                alt="PennyLog Logo" 
-                className="w-6 h-6 animate-float"
+                alt="SmartJeb Logo" 
+                className="w-10 h-10"
               />
             </div>
-            <div className="animate-slide-up">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-primary-600 dark:from-gray-100 dark:to-primary-400 bg-clip-text text-transparent">
-                PennyLog
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-primary-600 dark:from-gray-100 dark:to-primary-400 bg-clip-text text-transparent">
+                SmartJeb
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">You buy. We judge. Gently.</p>
             </div>

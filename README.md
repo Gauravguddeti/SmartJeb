@@ -1,7 +1,7 @@
-# 💰 PennyLog - AI-Assisted Expense Journal
+# 💰 SmartJeb - AI-Assisted Expense Journal
 
 <div align="center">
-  <img src="./logo.svg" alt="PennyLog Logo" width="120" height="120">
+  <img src="./logo.svg" alt="SmartJeb Logo" width="120" height="120">
   <h3>✨ You buy. We judge. Gently. ✨</h3>
   
   ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
@@ -10,18 +10,18 @@
   ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 </div>
 
-## 🎯 What is PennyLog?
+## 🎯 What is SmartJeb?
 
-PennyLog is your **sassy financial bestie** that helps you track expenses with AI-powered insights and a Gen Z twist! 💅 No more boring spreadsheets or judgmental bank statements - just pure financial tracking vibes with a side of gentle roasting.
+SmartJeb is your **intelligent financial companion** that helps you track expenses with AI-powered insights and genuine, human-like conversations! � No more boring spreadsheets or judgmental bank statements - just smart financial tracking with an AI assistant that can chat about anything.
 
-### 🌟 Why PennyLog?
+### 🌟 Why SmartJeb?
 
-- **🤖 AI-Powered Smart Categorization** - Our AI automatically sorts your expenses (and maybe judges your 3rd coffee purchase today)
+- **🤖 AI-Powered Smart Categorization** - Our AI automatically sorts your expenses and answers any question you have
 - **📊 Beautiful Analytics** - Visual dashboards that make your spending look aesthetic
-- **🎯 Goal Tracking** - Set financial goals and actually achieve them (shocking, we know!)
-- **🌙 Dark Mode Ready** - Because we know you're scrolling at 2 AM
-- **💬 Gen Z AI Chatbot** - Get financial advice with personality (and occasional sass)
-- **📱 Mobile-First Design** - Track expenses on the go, bestie!
+- **🎯 Goal Tracking** - Set financial goals and actually achieve them with AI guidance
+- **🌙 Dark Mode Ready** - Because we know you're browsing at 2 AM
+- **💬 Intelligent AI Assistant** - Get comprehensive advice on finances, life, career, and anything else
+- **📱 Mobile-First Design** - Track expenses on the go, seamlessly!
 
 ## ✨ Features That'll Make You Go "Periodt!"
 
@@ -44,10 +44,11 @@ PennyLog is your **sassy financial bestie** that helps you track expenses with A
 - Budget alerts (gentle reminders, not financial anxiety)
 
 ### 🤖 **AI Financial Assistant**
-- **Gen Z Personality** - Financial advice that doesn't sound like your parents
-- **Smart Calculations** - "If I save ₹100 daily for 6 months..." boom, answered!
-- **Spending Analysis** - Get roasted (gently) for your financial choices
-- **Saving Tips** - Practical advice with personality
+- **Intelligent Conversations** - Financial advice with genuine human-like responses
+- **Comprehensive Knowledge** - Ask about anything: finance, life, career, technology
+- **Smart Calculations** - "If I save ₹100 daily for 6 months..." boom, detailed breakdown!
+- **Personalized Analysis** - Get insights tailored to your specific situation
+- **Life Advice** - Beyond money - relationships, career, personal growth
 
 ### 🌙 **Dark Mode Everything**
 - Fully functional dark theme
@@ -125,13 +126,13 @@ Financial goal tracking that actually works:
 - Achievement celebrations
 - Smart recommendations based on spending patterns
 
-### 💬 **AI Chatbot**
-Your financial bestie that:
-- Answers money questions in Gen Z style
-- Calculates savings scenarios
-- Provides spending analysis
-- Offers budgeting advice
-- Roasts your financial choices (gently!)
+### 💬 **AI Assistant**
+Your intelligent companion that:
+- Answers questions about finance, life, career, and more
+- Provides detailed calculations and breakdowns
+- Offers genuine, human-like conversation
+- Gives practical advice for real-world situations
+- Adapts responses to your specific needs
 
 ## 🎨 Design Philosophy
 
@@ -151,7 +152,7 @@ src/
 │   ├── Dashboard.jsx   # Main dashboard
 │   ├── Analytics.jsx   # Charts and insights
 │   ├── Goals.jsx       # Goal tracking
-│   ├── AIChatbot.jsx   # Gen Z financial assistant
+│   ├── AIChatbot.jsx   # Intelligent AI assistant
 │   └── ...
 ├── context/            # React Context for state management
 ├── services/           # Business logic and AI services

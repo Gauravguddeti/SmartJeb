@@ -109,10 +109,10 @@ const Dashboard = () => {
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
       <div className="animate-slide-up">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-primary-600 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 dark:from-gray-100 to-primary-600 bg-clip-text text-transparent">
           Dashboard
         </h2>
-        <p className="text-gray-600 font-medium mt-1">Your expense overview and insights</p>
+        <p className="text-gray-600 dark:text-gray-300 font-medium mt-1">Your expense overview and insights</p>
       </div>
 
       {/* Quick Stats Widget */}
@@ -122,12 +122,12 @@ const Dashboard = () => {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 hover:scale-105 animate-slide-up group" style={{ animationDelay: '0.1s' }}>
+        <div className="card p-6 hover:scale-105 animate-slide-up group" style={{ animationDelay: '0.1s' }}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Today</p>
-              <p className="text-3xl font-bold text-gray-900">{formatCurrency(todayTotal)}</p>
-              <p className="text-xs text-gray-500 font-medium mt-1">Today's expenses</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Today</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{formatCurrency(todayTotal)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">Today's expenses</p>
             </div>
             <div className="bg-gradient-to-br from-primary-100 to-primary-200 p-3 rounded-xl group-hover:scale-110 transition-transform duration-300">
               <Calendar className="w-6 h-6 text-primary-600" />
@@ -135,12 +135,12 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 hover:scale-105 animate-slide-up group" style={{ animationDelay: '0.2s' }}>
+        <div className="card p-6 hover:scale-105 animate-slide-up group" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">This Month</p>
-              <p className="text-3xl font-bold text-gray-900">{formatCurrency(monthlyTotal)}</p>
-              <p className="text-xs text-gray-500 font-medium mt-1">Monthly total</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">This Month</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{formatCurrency(monthlyTotal)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">Monthly total</p>
             </div>
             <div className="bg-gradient-to-br from-success-100 to-success-200 p-3 rounded-xl group-hover:scale-110 transition-transform duration-300">
               <DollarSign className="w-6 h-6 text-success-600" />
@@ -148,12 +148,12 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 hover:scale-105 animate-slide-up group" style={{ animationDelay: '0.3s' }}>
+        <div className="card p-6 hover:scale-105 animate-slide-up group" style={{ animationDelay: '0.3s' }}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Daily Average</p>
-              <p className="text-3xl font-bold text-gray-900">{formatCurrency(insights.averagePerDay)}</p>
-              <p className="text-xs text-gray-500 font-medium mt-1">Average per day</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Daily Average</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{formatCurrency(insights.averagePerDay)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">Average per day</p>
             </div>
             <div className="bg-gradient-to-br from-warning-100 to-warning-200 p-3 rounded-xl group-hover:scale-110 transition-transform duration-300">
               <Target className="w-6 h-6 text-warning-600" />
@@ -164,15 +164,15 @@ const Dashboard = () => {
 
       {/* Weekly Summary */}
       {weeklyData && (
-        <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+        <div className="card p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
             <TrendingUp className="w-5 h-5 mr-2 text-primary-600" />
             This Week's Summary
           </h3>
           <div className="flex items-center gap-4 mb-4">
             <div>
               <p className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-primary-600 bg-clip-text text-transparent">{formatCurrency(weeklyData.currentWeekTotal)}</p>
-              <p className="text-sm text-gray-500 font-medium">Total spent this week</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total spent this week</p>
             </div>
             {weeklyData.percentageChange !== 0 && (
               <div className={`flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-medium shadow-md animate-bounce-gentle ${
@@ -195,12 +195,12 @@ const Dashboard = () => {
       {/* AI Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Spending Insights */}
-        <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 animate-slide-up" style={{ animationDelay: '0.5s' }}>
+        <div className="card p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-slide-up" style={{ animationDelay: '0.5s' }}>
           <div className="flex items-center gap-3 mb-6">
             <div className="bg-gradient-to-br from-primary-100 to-primary-200 p-2 rounded-xl">
               <AlertCircle className="w-5 h-5 text-primary-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900">Spending Insights</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Spending Insights</h3>
           </div>
           <div className="space-y-4">
             {insights.insights.map((insight, index) => (
@@ -213,12 +213,12 @@ const Dashboard = () => {
         </div>
 
         {/* AI Tips */}
-        <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 animate-slide-up" style={{ animationDelay: '0.6s' }}>
+        <div className="card p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-slide-up" style={{ animationDelay: '0.6s' }}>
           <div className="flex items-center gap-3 mb-6">
             <div className="bg-gradient-to-br from-warning-100 to-warning-200 p-2 rounded-xl">
               <Lightbulb className="w-5 h-5 text-warning-600 animate-pulse-gentle" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900">Smart Saving Tips</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Smart Saving Tips</h3>
           </div>
           <div className="space-y-4">
             {insights.tips.map((tip, index) => (
@@ -232,8 +232,8 @@ const Dashboard = () => {
       </div>
 
       {/* Recent Expenses */}
-      <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 animate-slide-up" style={{ animationDelay: '0.8s' }}>
-        <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+      <div className="card p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-slide-up" style={{ animationDelay: '0.8s' }}>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
           <div className="bg-gradient-to-br from-indigo-100 to-indigo-200 p-2 rounded-xl mr-3">
             <Calendar className="w-5 h-5 text-indigo-600" />
           </div>
@@ -247,14 +247,14 @@ const Dashboard = () => {
                   <DollarSign className="w-5 h-5 text-gray-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">{expense.description}</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{expense.description}</p>
                   <p className="text-sm text-gray-600">
                     {format(new Date(expense.date), 'MMM dd, yyyy')}
                   </p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-semibold text-gray-900">₹{expense.amount.toFixed(2)}</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-100">₹{expense.amount.toFixed(2)}</p>
                 <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(expense.category)}`}>
                   {expense.category}
                 </span>

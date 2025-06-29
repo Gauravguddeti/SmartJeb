@@ -6,6 +6,7 @@ import { MessageCircle, X, Send, Sparkles, Bot, User } from 'lucide-react';
  */
 const AIChatbot = () => {
   const [isOpen, setIsOpen] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -43,8 +44,8 @@ const AIChatbot = () => {
 
     // How much/calculation questions
     if (lowerMessage.includes('how much') || lowerMessage.includes('calculate') || lowerMessage.includes('if i save')) {
-      if (lowerMessage.includes('10000') && lowerMessage.includes('3 months')) {
-        return "Great question! If you want to save ₹10,000 in 3 months, here's the breakdown:\n\n💰 **Daily target**: ₹111 per day (₹10,000 ÷ 90 days)\n📅 **Weekly target**: ₹770 per week\n📊 **Monthly target**: ₹3,333 per month\n\n**Smart tips to reach this goal:**\n• Cut down on one coffee/tea outside daily (₹50-80 saved)\n• Pack lunch 3 days a week (₹200-300 saved)\n• Use public transport instead of auto/cab (₹100-200 saved)\n• Skip one movie/dinner out per month (₹500-1000 saved)\n\nYou've got this! Small consistent steps make big results! 🚀";
+      if (lowerMessage.includes('10000') && (lowerMessage.includes('3 months') || lowerMessage.includes('3 month'))) {
+        return "Perfect! Let me break down exactly how to save ₹10,000 in 3 months:\n\n💰 **Your Savings Plan:**\n• **Daily target**: ₹111 per day (₹10,000 ÷ 90 days)\n• **Weekly target**: ₹770 per week\n• **Monthly target**: ₹3,333 per month\n\n🎯 **Practical Ways to Save ₹111 Daily:**\n• Skip outside food once = ₹100-150 saved\n• Use public transport instead of auto = ₹80-120 saved\n• Make coffee at home = ₹50-80 saved\n• Avoid impulse purchases = ₹50-100 saved\n\n📊 **Monthly Strategy:**\n• Week 1: Focus on food expenses (₹800 saved)\n• Week 2: Transportation savings (₹600 saved)\n• Week 3: Entertainment cuts (₹700 saved)\n• Week 4: Shopping discipline (₹900 saved)\n\n✨ **Pro Tips:**\n• Set up auto-transfer of ₹111 daily\n• Track progress weekly\n• Reward yourself at month-end (within budget!)\n• Find free entertainment alternatives\n\nYou've absolutely got this! Small daily actions = big results! 🚀";
       }
       
       const calculationResponses = [
@@ -54,6 +55,16 @@ const AIChatbot = () => {
         "Calculator ready! ⚡ Just give me the details - how much you want to save, invest, or spend, and over what period. I'll show you the daily, weekly, and monthly breakdown plus some smart strategies!"
       ];
       return calculationResponses[Math.floor(Math.random() * calculationResponses.length)];
+    }
+
+    // More specific patterns for the 10000 question
+    if ((lowerMessage.includes('10000') || lowerMessage.includes('ten thousand')) && (lowerMessage.includes('3 months') || lowerMessage.includes('3 month'))) {
+      return "Absolutely! Here's your complete plan to save ₹10,000 in 3 months:\n\n💰 **The Math:**\n• **Daily**: ₹111 (₹10,000 ÷ 90 days)\n• **Weekly**: ₹770\n• **Monthly**: ₹3,333\n\n🎯 **Daily Savings Strategies:**\n1. **Food & Drinks** (₹60-80/day)\n   • Cook at home instead of ordering\n   • Carry water bottle (₹20 saved)\n   • Make tea/coffee at home (₹40 saved)\n\n2. **Transportation** (₹30-50/day)\n   • Use bus/metro instead of auto/cab\n   • Walk short distances\n   • Share rides when possible\n\n3. **Small Expenses** (₹20-30/day)\n   • Avoid impulse snacks\n   • Use library instead of buying books\n   • Free entertainment (YouTube vs Netflix)\n\n📱 **Track Progress:**\n• Use SmartJeb to log saved amounts\n• Weekly reviews and adjustments\n• Celebrate milestones (₹2,500, ₹5,000)\n\n🚀 **Motivation:** Every ₹111 saved today gets you closer to your ₹10,000 goal!\n\nWhat's this ₹10,000 for? I can give more specific tips based on your goal! 😊";
+    }
+
+    // Specific question about wanting 10000
+    if (lowerMessage.includes('want') && lowerMessage.includes('10000') && lowerMessage.includes('3 month')) {
+      return "I got you! You want ₹10,000 in 3 months - here's your complete action plan:\n\n💰 **The Breakdown:**\n• **₹111 per day** for 90 days = ₹10,000\n• **₹770 per week** (easier to track)\n• **₹3,333 per month**\n\n🎯 **Week-by-Week Strategy:**\n\n**Week 1-2: Food & Beverages**\n• Cook breakfast at home: ₹50/day\n• Carry lunch 3 days: ₹150/day\n• Make coffee/tea at home: ₹40/day\n• Target: ₹1,500 in 2 weeks\n\n**Week 3-4: Transportation**\n• Bus/metro instead of auto: ₹80/day\n• Walk short distances: ₹30/day\n• Share rides: ₹50/day\n• Target: ₹1,500 in 2 weeks\n\n**Week 5-8: Lifestyle Adjustments**\n• Skip one movie night: ₹300\n• Home entertainment: ₹200/week\n• Avoid impulse shopping: ₹500/week\n• Target: ₹2,800 in 4 weeks\n\n**Week 9-12: Final Push**\n• Sell unused items: ₹1,000\n• Freelance/side work: ₹2,000\n• Strict expense tracking: ₹1,200\n• Target: ₹4,200 in 4 weeks\n\n✅ **Total: ₹10,000 achieved!**\n\n💡 **Pro tip:** Start today! Even ₹50 saved today is ₹50 closer to your goal.\n\nWhat's this ₹10,000 for? A goal, emergency fund, or something special? 😊";
     }
 
     // Budget and money management
@@ -206,7 +217,11 @@ const AIChatbot = () => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col z-50 animate-slide-up">
+    <div className={`fixed transition-all duration-300 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col z-50 animate-slide-up ${
+      isExpanded 
+        ? 'bottom-6 right-6 left-6 top-6 md:left-1/4' 
+        : 'bottom-6 right-6 w-96 h-[500px]'
+    }`}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary-500 to-primary-600 rounded-t-2xl">
         <div className="flex items-center space-x-3">
@@ -218,12 +233,29 @@ const AIChatbot = () => {
             <p className="text-xs text-white/80">Your intelligent financial companion</p>
           </div>
         </div>
-        <button
-          onClick={() => setIsOpen(false)}
-          className="text-white/80 hover:text-white transition-colors duration-200 hover:bg-white/10 rounded-lg p-1"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-white/80 hover:text-white transition-colors duration-200 hover:bg-white/10 rounded-lg p-1"
+            title={isExpanded ? "Minimize" : "Expand"}
+          >
+            {isExpanded ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-5v4m0-4h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-5v4m0-4h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+            )}
+          </button>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="text-white/80 hover:text-white transition-colors duration-200 hover:bg-white/10 rounded-lg p-1"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
@@ -233,9 +265,9 @@ const AIChatbot = () => {
             key={message.id}
             className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div className={`flex items-start space-x-2 max-w-[80%] ${
-              message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-            }`}>
+            <div className={`flex items-start space-x-2 ${
+              isExpanded ? 'max-w-[70%]' : 'max-w-[80%]'
+            } ${message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                 message.type === 'user' 
                   ? 'bg-primary-500' 
@@ -290,8 +322,10 @@ const AIChatbot = () => {
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Ask me about budgeting, savings, or money tips..."
-            className="flex-1 resize-none rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-            rows="2"
+            className={`flex-1 resize-none rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm ${
+              isExpanded ? 'min-h-[60px]' : ''
+            }`}
+            rows={isExpanded ? "3" : "2"}
           />
           <button
             onClick={handleSendMessage}

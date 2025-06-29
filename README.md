@@ -197,10 +197,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Vite** for the lightning-fast development experience
 - **The Gen Z community** for inspiring the chatbot's personality
 
-## 🌟 Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=Gauravguddeti/SmartJeb&type=Date)](https://star-history.com/#Gauravguddeti/SmartJeb&Date)
-
 ---
 
 <div align="center">

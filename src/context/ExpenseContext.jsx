@@ -1,18 +1,4 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  getDocs, 
-  query, 
-  where, 
-  orderBy,
-  onSnapshot
-} from 'firebase/firestore';
-import { db } from '../config/firebase';
-import { useAuth } from './AuthContext';
 import { categorizeExpense, trainCategorization } from '../services/aiService.js';
 import toast from 'react-hot-toast';
 
@@ -169,51 +155,37 @@ const expenseReducer = (state, action) => {
  */
 export const ExpenseProvider = ({ children }) => {
   const [state, dispatch] = useReducer(expenseReducer, initialState);
-  const { user } = useAuth();
 
-  // Load user expenses on auth state change
+  // Load expenses from localStorage on mount
   useEffect(() => {
-    if (!user) {
-      // Clear expenses when user logs out
-      dispatch({ type: ACTIONS.SET_EXPENSES, payload: [] });
-      return;
-    }
-
-    dispatch({ type: ACTIONS.SET_LOADING, payload: true });
-
-    // Set up real-time listener for user's expenses
-    const expensesQuery = query(
-      collection(db, 'expenses'),
-      where('userId', '==', user.uid),
-      orderBy('date', 'desc')
-    );
-
-    const unsubscribe = onSnapshot(
-      expensesQuery,
-      (snapshot) => {
-        const expenses = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        dispatch({ type: ACTIONS.SET_EXPENSES, payload: expenses });
-      },
-      (error) => {
-        console.error('Error fetching expenses:', error);
-        dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
+    const loadExpenses = () => {
+      try {
+        const savedExpenses = localStorage.getItem('smartjeb-expenses');
+        if (savedExpenses) {
+          const expenses = JSON.parse(savedExpenses);
+          dispatch({ type: ACTIONS.SET_EXPENSES, payload: expenses });
+        }
+      } catch (error) {
+        console.error('Error loading expenses:', error);
         toast.error('Failed to load expenses');
       }
-    );
+    };
 
-    return () => unsubscribe();
-  }, [user]);
+    loadExpenses();
+  }, []);
+
+  // Helper function to save expenses to localStorage
+  const saveToStorage = (expenses) => {
+    try {
+      localStorage.setItem('smartjeb-expenses', JSON.stringify(expenses));
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+      toast.error('Failed to save expenses');
+    }
+  };
 
   // Add new expense
   const addNewExpense = async (expenseData) => {
-    if (!user) {
-      toast.error('You must be logged in to add expenses');
-      return;
-    }
-
     try {
       dispatch({ type: ACTIONS.SET_LOADING, payload: true });
 
@@ -225,44 +197,47 @@ export const ExpenseProvider = ({ children }) => {
 
       const expense = {
         ...expenseData,
+        id: Date.now().toString(), // Simple ID generation
         category,
-        userId: user.uid,
         createdAt: new Date(),
         updatedAt: new Date()
       };
 
-      const docRef = await addDoc(collection(db, 'expenses'), expense);
+      const newExpenses = [expense, ...state.expenses];
+      dispatch({ type: ACTIONS.ADD_EXPENSE, payload: expense });
+      saveToStorage(newExpenses);
       
       // Train AI with user's categorization
       await trainCategorization(expenseData.description, category);
       
       toast.success('Expense added successfully!');
-      return { id: docRef.id, ...expense };
+      return expense;
     } catch (error) {
       console.error('Error adding expense:', error);
       dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
       toast.error('Failed to add expense');
       throw error;
+    } finally {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: false });
     }
   };
 
   // Update expense
   const updateExistingExpense = async (id, updates) => {
-    if (!user) {
-      toast.error('You must be logged in to update expenses');
-      return;
-    }
-
     try {
       dispatch({ type: ACTIONS.SET_LOADING, payload: true });
 
-      const expenseRef = doc(db, 'expenses', id);
       const updatedData = {
         ...updates,
         updatedAt: new Date()
       };
 
-      await updateDoc(expenseRef, updatedData);
+      const updatedExpenses = state.expenses.map(expense => 
+        expense.id === id ? { ...expense, ...updatedData } : expense
+      );
+
+      dispatch({ type: ACTIONS.UPDATE_EXPENSE, payload: { id, updates: updatedData } });
+      saveToStorage(updatedExpenses);
       
       toast.success('Expense updated successfully!');
     } catch (error) {
@@ -270,20 +245,19 @@ export const ExpenseProvider = ({ children }) => {
       dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
       toast.error('Failed to update expense');
       throw error;
+    } finally {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: false });
     }
   };
 
   // Delete expense
   const deleteExistingExpense = async (id) => {
-    if (!user) {
-      toast.error('You must be logged in to delete expenses');
-      return;
-    }
-
     try {
       dispatch({ type: ACTIONS.SET_LOADING, payload: true });
 
-      await deleteDoc(doc(db, 'expenses', id));
+      const updatedExpenses = state.expenses.filter(expense => expense.id !== id);
+      dispatch({ type: ACTIONS.DELETE_EXPENSE, payload: id });
+      saveToStorage(updatedExpenses);
       
       toast.success('Expense deleted successfully!');
     } catch (error) {
@@ -291,6 +265,8 @@ export const ExpenseProvider = ({ children }) => {
       dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
       toast.error('Failed to delete expense');
       throw error;
+    } finally {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: false });
     }
   };
 

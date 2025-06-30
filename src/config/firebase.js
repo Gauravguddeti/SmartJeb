@@ -2,39 +2,6 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// Comprehensive Firebase hosting detection prevention
-if (typeof window !== 'undefined') {
-  // Prevent all Firebase hosting-related requests
-  window.__firebase_hosting_disabled = true;
-  window.__firebase_hosting_domain = false;
-  
-  // Handle CSP violations gracefully
-  window.addEventListener('securitypolicyviolation', (e) => {
-    if (e.violatedDirective === 'script-src' && e.sourceFile.includes('google')) {
-      console.log('CSP violation from Google scripts - this is expected and safe');
-      e.preventDefault();
-    }
-  });
-  
-  // Intercept and block ONLY the problematic init.json request
-  const originalFetch = window.fetch;
-  window.fetch = function(...args) {
-    const url = args[0];
-    if (typeof url === 'string' && 
-        (url.includes('__/firebase/init.json') || 
-         url.includes('__/firebase/init.ison') ||
-         url.endsWith('/firebase/init.json') ||
-         url.endsWith('/firebase/init.ison'))) {
-      console.log('Blocked Firebase hosting init request:', url);
-      return Promise.reject(new Error('Firebase hosting disabled'));
-    }
-    return originalFetch.apply(this, args);
-  };
-  
-  // Remove XMLHttpRequest interception as it might block legitimate requests
-  // The fetch interception should be sufficient
-}
-
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
@@ -68,7 +35,7 @@ googleProvider.setCustomParameters({
 });
 
 // Log successful initialization
-console.log('Firebase initialized successfully for production');
+console.log('Firebase initialized successfully for Firebase Hosting');
 console.log('Auth domain:', firebaseConfig.authDomain);
 console.log('Project ID:', firebaseConfig.projectId);
 

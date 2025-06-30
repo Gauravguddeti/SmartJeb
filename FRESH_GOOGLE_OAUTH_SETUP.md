@@ -1,13 +1,53 @@
 # Fresh Google OAuth Setup for SmartJeb
 
-## 🔄 Reset Instructions (If you have issues)
+## � Quick Reset (If you just want to reset fast)
+
+**Google Cloud Console Reset:**
+1. Go to [console.cloud.google.com](https://console.cloud.google.com)
+2. APIs & Services → Credentials → Delete all OAuth 2.0 Client IDs
+3. APIs & Services → Library → Disable "Google+ API" and "People API"
+
+**Supabase Reset:**
+1. Authentication → Providers → Toggle Google OFF
+2. Clear Client ID and Secret fields
+
+**Then follow the full setup below ↓**
+
+---
+
+## �🔄 Reset Instructions (If you have issues)
 
 If you're having Google OAuth issues, follow these steps to reset completely:
 
 ### Step 1: Clean Up Existing Setup
+
+#### Reset Google Cloud Console OAuth Settings:
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Delete any existing OAuth 2.0 Client IDs for this project
-3. In Supabase Dashboard → Authentication → Providers → Disable Google (if enabled)
+2. **Select your project** from the dropdown at the top
+3. **Delete existing OAuth credentials:**
+   - Navigate to "APIs & Services" → "Credentials"
+   - Look for any existing "OAuth 2.0 Client IDs"
+   - Click the **trash/delete icon** next to each OAuth 2.0 Client ID
+   - Confirm deletion when prompted
+
+4. **Reset OAuth Consent Screen (if needed):**
+   - Go to "APIs & Services" → "OAuth consent screen"
+   - If you want to start fresh, you can:
+     - Edit the existing consent screen and update details
+     - Or delete test users and start over
+
+5. **Disable APIs (optional for complete reset):**
+   - Go to "APIs & Services" → "Library"
+   - Find "Google+ API" and "People API"
+   - Click on each and press "DISABLE" if you want a complete reset
+   - You'll re-enable them in the next steps
+
+#### Reset Supabase Settings:
+1. Go to your Supabase Dashboard
+2. Navigate to Authentication → Providers
+3. **Disable Google provider** (toggle it off)
+4. Clear any existing Client ID and Client Secret fields
+5. Save the changes
 
 ### Step 2: Fresh Google OAuth Setup
 
@@ -77,6 +117,28 @@ If you're having Google OAuth issues, follow these steps to reset completely:
 
 ### Issue: "Invalid login hint"
 **Solution**: Clear browser cookies and try again
+
+### Issue: Still having problems after following the guide?
+**Complete Nuclear Reset Option:**
+1. **Create a brand new Google Cloud Project:**
+   - Go to Google Cloud Console
+   - Click the project dropdown → "New Project"
+   - Give it a fresh name like "SmartJeb-OAuth-v2"
+   
+2. **Follow all setup steps from scratch** with the new project
+
+3. **Alternative: Reset existing project completely:**
+   - Delete ALL credentials in "APIs & Services" → "Credentials"
+   - Go to "OAuth consent screen" → Delete all test users
+   - Disable ALL APIs in "APIs & Services" → "Library"
+   - Wait 10-15 minutes for Google's cache to clear
+   - Start fresh with Step 2 of this guide
+
+### Issue: "This app isn't verified" warning
+**Solution**: 
+- This is normal for development
+- Click "Advanced" → "Go to SmartJeb (unsafe)" to continue
+- Or add your email as a test user in OAuth consent screen
 
 ## 📋 Verification Checklist
 - [ ] Google+ API enabled in Google Cloud Console

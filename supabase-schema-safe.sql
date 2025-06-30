@@ -10,6 +10,9 @@ CREATE TABLE IF NOT EXISTS profiles (
     email TEXT UNIQUE NOT NULL,
     name TEXT,
     avatar_url TEXT,
+    bio TEXT,
+    phone TEXT,
+    location TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()) NOT NULL
 );

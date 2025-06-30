@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, Mail, Linkedin, Github, Instagram, Menu, X, Star, CheckCircle, TrendingUp, Shield, Zap, BarChart3 } from 'lucide-react';
 
-const LandingPage = ({ onEnterApp, onGetStarted, onShowAuth }) => {
+const LandingPage = ({ onEnterApp, onGetStarted, onShowAuth, user, isAuthenticated }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [sliderPosition, setSliderPosition] = useState(50);
   const [reviewForm, setReviewForm] = useState({ email: '', review: '' });
@@ -179,19 +179,45 @@ const LandingPage = ({ onEnterApp, onGetStarted, onShowAuth }) => {
             <p className="text-xl text-slate-300 mb-8">
               SmartJeb helps you understand your money, get smart insights, and have fun while tracking.
             </p>
+            {isAuthenticated && (
+              <div className="text-sm text-gray-400 mb-4 text-center">
+                Welcome back, {user?.email}! 👋
+              </div>
+            )}
             <div className="flex flex-col sm:flex-row gap-4">
-              <button 
-                onClick={onGetStarted}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 flex items-center justify-center"
-              >
-                Get Started — It's Free! <ArrowRight className="ml-2" size={20} />
-              </button>
-              <button 
-                onClick={onEnterApp}
-                className="border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300"
-              >
-                Try App (Guest Mode)
-              </button>
+              {isAuthenticated ? (
+                // Authenticated user buttons
+                <>
+                  <button 
+                    onClick={onEnterApp}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 flex items-center justify-center"
+                  >
+                    Enter App <ArrowRight className="ml-2" size={20} />
+                  </button>
+                  <button 
+                    onClick={onShowAuth}
+                    className="border border-gray-500 text-gray-400 hover:bg-gray-500 hover:text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300"
+                  >
+                    Switch Account
+                  </button>
+                </>
+              ) : (
+                // Non-authenticated user buttons
+                <>
+                  <button 
+                    onClick={onGetStarted}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 flex items-center justify-center"
+                  >
+                    Get Started — It's Free! <ArrowRight className="ml-2" size={20} />
+                  </button>
+                  <button 
+                    onClick={onEnterApp}
+                    className="border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300"
+                  >
+                    Try App (Guest Mode)
+                  </button>
+                </>
+              )}
             </div>
           </div>
           

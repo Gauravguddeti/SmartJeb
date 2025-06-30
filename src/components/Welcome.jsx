@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { PiggyBank, Sparkles, Target, BarChart3, Shield, ArrowRight, CheckCircle, Star, Gift } from 'lucide-react';
 import { useExpenses } from '../context/ExpenseContext';
+import { useAuth } from '../context/AuthContext';
+import UserProfileModal from './UserProfileModal';
 
 /**
  * Welcome Component - Onboarding experience for new users
  */
 const Welcome = ({ onComplete, isGuest = false }) => {
   const { expenses } = useExpenses();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   // Check if user should see welcome screen
   useEffect(() => {
@@ -111,6 +115,17 @@ const Welcome = ({ onComplete, isGuest = false }) => {
   const handleComplete = () => {
     localStorage.setItem('smartjeb-welcome-seen', 'true');
     setIsVisible(false);
+    
+    // For authenticated users, show profile setup
+    if (user && !isGuest) {
+      setShowProfileModal(true);
+    } else {
+      onComplete?.();
+    }
+  };
+
+  const handleProfileComplete = () => {
+    setShowProfileModal(false);
     onComplete?.();
   };
 
@@ -253,6 +268,19 @@ const Welcome = ({ onComplete, isGuest = false }) => {
         )}
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {isVisible && welcomeContent}
+      {showProfileModal && (
+        <UserProfileModal
+          isOpen={showProfileModal}
+          onClose={handleProfileComplete}
+          isFirstTime={true}
+        />
+      )}
+    </>
   );
 };
 

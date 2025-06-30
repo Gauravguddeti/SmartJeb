@@ -122,6 +122,11 @@ export const AuthProvider = ({ children }) => {
       // For local-only mode, just clear the state
       setUser(null)
       setIsGuest(false)
+      // Clear visited flag to show landing page
+      localStorage.removeItem('smartjeb-visited')
+      localStorage.removeItem('smartjeb-welcome-seen')
+      // Reload to reset app state
+      window.location.reload()
       return
     }
 
@@ -130,6 +135,11 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error
       setUser(null)
       setIsGuest(false)
+      // Clear visited flag to show landing page
+      localStorage.removeItem('smartjeb-visited')
+      localStorage.removeItem('smartjeb-welcome-seen')
+      // Reload to reset app state
+      window.location.reload()
     } catch (error) {
       console.error('Error signing out:', error)
     }

@@ -39,21 +39,32 @@ const AppContent = () => {
       }
     }
     
-    // Check if user has visited before
-    const hasVisited = localStorage.getItem('smartjeb-visited');
-    if (hasVisited && !isAuthenticated && !isGuest) {
-      setShowLanding(false);
-    }
+    // Always show landing page first, regardless of auth state
+    // The landing page will handle navigation to the app
   }, []);
 
   // Handle auth state changes
   useEffect(() => {
-    if (isAuthenticated || isGuest) {
-      localStorage.setItem('smartjeb-visited', 'true');
-      setShowLanding(false);
-      setShowWelcome(true);
+    if (!loading) {
+      const hasVisited = localStorage.getItem('smartjeb-visited');
+      const hasSeenWelcome = localStorage.getItem('smartjeb-welcome-seen');
+      
+      // If user is authenticated and has visited before, skip landing page
+      if ((isAuthenticated || isGuest) && hasVisited) {
+        setShowLanding(false);
+        
+        // If they've also seen welcome, skip welcome too
+        if (hasSeenWelcome) {
+          setShowWelcome(false);
+        }
+      }
+      
+      // Mark as visited when authenticated or in guest mode
+      if (isAuthenticated || isGuest) {
+        localStorage.setItem('smartjeb-visited', 'true');
+      }
     }
-  }, [isAuthenticated, isGuest]);
+  }, [loading, isAuthenticated, isGuest]);
 
   // Show loading spinner while auth is initializing
   if (loading) {
@@ -65,7 +76,13 @@ const AppContent = () => {
   }
 
   const handleEnterApp = () => {
-    // This is for "Try App" button - direct guest access with warning
+    // This is for "Enter App" button - direct access for authenticated users
+    setShowLanding(false);
+    setShowWelcome(true);
+  };
+
+  const handleTryApp = () => {
+    // This is for "Try App" button - guest access with warning
     localStorage.setItem('smartjeb-visited', 'true');
     setShowLanding(false);
     setShowWelcome(true); // Show welcome screen with guest warning
@@ -91,6 +108,9 @@ const AppContent = () => {
 
   const handleGuestLogin = () => {
     // Guest mode is handled by AuthContext.enterGuestMode()
+    // Hide landing page and show the app
+    setShowLanding(false);
+    setShowAuth(false);
     setShowWelcome(true);
   };
 
@@ -107,7 +127,7 @@ const AppContent = () => {
       case 'export':
         return <Export />;
       case 'settings':
-        return <Settings />;
+        return <Settings darkMode={darkMode} toggleDarkMode={toggleDarkMode} />;
       default:
         return <ExpenseList onAddExpense={() => setShowExpenseForm(true)} />;
     }
@@ -121,6 +141,8 @@ const AppContent = () => {
           onEnterApp={handleEnterApp}
           onGetStarted={handleGetStarted}
           onShowAuth={handleShowAuth}
+          user={user}
+          isAuthenticated={isAuthenticated}
         />
         <AuthModal 
           isOpen={showAuth}

@@ -163,12 +163,12 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Amount Field */}
             <div className="space-y-2 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 <DollarSign className="w-4 h-4 inline mr-1" />
                 Amount (₹) *
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-semibold text-lg">₹</span>
+                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 font-semibold text-lg">₹</span>
                 <input
                   type="number"
                   name="amount"
@@ -177,7 +177,7 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
                   step="0.01"
                   min="0"
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 text-lg font-semibold"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500 text-lg font-semibold bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   placeholder="0.00"
                 />
               </div>
@@ -185,7 +185,7 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
 
             {/* Description Field */}
             <div className="space-y-2 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 <FileText className="w-4 h-4 inline mr-1" />
                 Description *
               </label>
@@ -195,14 +195,14 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
                 value={formData.description}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 placeholder="What did you spend on?"
               />
             </div>
 
             {/* Category Field */}
             <div className="space-y-2 animate-slide-up" style={{ animationDelay: '0.3s' }}>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 <Tag className="w-4 h-4 inline mr-1" />
                 Category
               </label>
@@ -210,7 +210,7 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option value="">Select a category</option>
                 {EXPENSE_CATEGORIES.map(category => (
@@ -223,7 +223,7 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
 
             {/* Date Field */}
             <div className="space-y-2 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 <Calendar className="w-4 h-4 inline mr-1" />
                 Date
               </label>
@@ -236,7 +236,7 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
                   className={`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-300 ${
                     formData.date === format(new Date(), 'yyyy-MM-dd')
                       ? 'bg-primary-500 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500'
                   }`}
                 >
                   Today
@@ -247,7 +247,7 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
                   className={`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-300 ${
                     formData.date === format(new Date(Date.now() - 86400000), 'yyyy-MM-dd')
                       ? 'bg-primary-500 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500'
                   }`}
                 >
                   Yesterday
@@ -255,21 +255,21 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
                 <button
                   type="button"
                   onClick={() => setQuickDate(2)}
-                  className="px-3 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-300"
+                  className="px-3 py-1 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500 transition-all duration-300"
                 >
                   2 days ago
                 </button>
               </div>
 
               <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
                 <input
                   type="date"
                   name="date"
                   value={formData.date}
                   onChange={handleInputChange}
                   max={format(new Date(), 'yyyy-MM-dd')}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 />
                 {formData.date === format(new Date(), 'yyyy-MM-dd') && (
                   <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
@@ -288,7 +288,7 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
 
             {/* Note Field */}
             <div className="space-y-2 animate-slide-up" style={{ animationDelay: '0.5s' }}>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Additional Notes
               </label>
               <textarea
@@ -296,26 +296,26 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
                 value={formData.note}
                 onChange={handleInputChange}
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 resize-none"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 placeholder="Any additional details..."
               />
             </div>
 
             {/* Receipt Upload */}
             <div className="space-y-2 animate-slide-up" style={{ animationDelay: '0.6s' }}>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 <Camera className="w-4 h-4 inline mr-1" />
                 Receipt (Optional)
               </label>
               {formData.receipt ? (
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
-                  <span className="text-sm text-gray-600 truncate">
+                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-600 rounded-xl border border-gray-200 dark:border-gray-500">
+                  <span className="text-sm text-gray-600 dark:text-gray-300 truncate">
                     {typeof formData.receipt === 'string' ? 'Receipt attached' : formData.receipt.name}
                   </span>
                   <button
                     type="button"
                     onClick={removeReceipt}
-                    className="text-red-500 hover:text-red-700 transition-colors"
+                    className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>

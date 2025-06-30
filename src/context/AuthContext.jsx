@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import toast from 'react-hot-toast'
 
 const AuthContext = createContext({})
 
@@ -122,10 +123,10 @@ export const AuthProvider = ({ children }) => {
       // For local-only mode, just clear the state
       setUser(null)
       setIsGuest(false)
-      // Clear visited flag to show landing page
+      // Clear all app state flags
       localStorage.removeItem('smartjeb-visited')
       localStorage.removeItem('smartjeb-welcome-seen')
-      // Reload to reset app state
+      // Force a page reload to reset app state completely
       window.location.reload()
       return
     }
@@ -133,15 +134,20 @@ export const AuthProvider = ({ children }) => {
     try {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
+      
+      // Clear local state
       setUser(null)
       setIsGuest(false)
-      // Clear visited flag to show landing page
+      
+      // Clear all app state flags
       localStorage.removeItem('smartjeb-visited')
       localStorage.removeItem('smartjeb-welcome-seen')
-      // Reload to reset app state
+      
+      // Force a page reload to reset app state completely
       window.location.reload()
     } catch (error) {
       console.error('Error signing out:', error)
+      toast.error('Error signing out')
     }
   }
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Target, Plus, Edit2, Trash2, TrendingUp, AlertTriangle, CheckCircle, Calendar, DollarSign } from 'lucide-react';
 import { useExpenses } from '../context/ExpenseContext';
 import { useGoals } from '../context/GoalsContext';
+import { useAuth } from '../context/AuthContext';
 import { formatCurrency } from '../utils/formatters';
 import { format, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
@@ -11,6 +12,7 @@ import { format, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 const Goals = () => {
   const { expenses } = useExpenses();
   const { goals, loading, addGoal, updateGoal, deleteGoal } = useGoals();
+  const { isGuest } = useAuth();
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
 
@@ -132,6 +134,25 @@ const Goals = () => {
           Add Goal
         </button>
       </div>
+
+      {/* Guest Mode Warning */}
+      {isGuest && (
+        <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-4 animate-slide-down">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+              <span className="text-red-600 font-bold text-sm">⚠️</span>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-red-800 font-semibold">
+                Guest Mode - Your goals won't be saved permanently!
+              </p>
+              <p className="text-xs text-red-600 mt-1">
+                Create an account to keep your goals and track progress over time.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Goals List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

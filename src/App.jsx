@@ -16,6 +16,7 @@ import Welcome from './components/Welcome';
 import AIChatbot from './components/AIChatbot';
 import LandingPage from './components/LandingPage';
 import AuthModal from './components/AuthModal';
+import GuestModePrompt from './components/GuestModePrompt';
 
 /**
  * Main App Component
@@ -63,6 +64,25 @@ const AppContent = () => {
       }
     }
   }, [loading, isAuthenticated, isGuest]);
+
+  // Add refresh warning for guest mode
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isGuest) {
+        e.preventDefault();
+        e.returnValue = 'You are in guest mode. Your data will be lost if you refresh or close this page. Consider signing up to save your data permanently.';
+        return e.returnValue;
+      }
+    };
+
+    if (isGuest) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isGuest]);
 
   // Show loading spinner while auth is initializing
   if (loading) {
@@ -232,6 +252,7 @@ const AppContent = () => {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             onAddExpense={() => setShowExpenseForm(true)}
+            onShowAuth={handleShowAuth}
             isGuest={!isAuthenticated}
           />
 
@@ -307,6 +328,9 @@ const AppContent = () => {
 
           {/* AI Chatbot */}
           <AIChatbot />
+
+          {/* Guest Mode Prompt */}
+          {isGuest && <GuestModePrompt onShowAuth={handleShowAuth} />}
         </div>
       </GoalsProvider>
     </ExpenseProvider>

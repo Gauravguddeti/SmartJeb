@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Camera, Calendar, DollarSign, Tag, FileText, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { useExpenses } from '../context/ExpenseContext';
+import { useAuth } from '../context/AuthContext';
 import { EXPENSE_CATEGORIES } from '../services/database';
 import { categorizeExpense } from '../services/aiService';
 
@@ -11,6 +12,7 @@ import { categorizeExpense } from '../services/aiService';
  */
 const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
   const { addExpense, updateExpense } = useExpenses();
+  const { user, isGuest } = useAuth();
   const isEditing = Boolean(expense);
 
   const [formData, setFormData] = useState({
@@ -153,6 +155,25 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
                 >
                   Dismiss
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Guest Mode Warning */}
+        {isGuest && (
+          <div className="mx-6 mt-4 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 animate-slide-down">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center animate-bounce-gentle">
+                <span className="text-red-600 font-bold text-sm">⚠️</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-red-800 font-semibold">
+                  Guest Mode - This expense won't be saved permanently!
+                </p>
+                <p className="text-xs text-red-600 mt-1">
+                  Sign up to keep your expenses safe and sync across devices.
+                </p>
               </div>
             </div>
           </div>
@@ -339,6 +360,18 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
                 </label>
               )}
             </div>
+
+            {/* Guest Mode Warning */}
+            {!user && (
+              <div className="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-xl text-yellow-700 text-sm font-medium space-x-2 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2h2v2zm0-3H9V7h2v3z" />
+                </svg>
+                <span>
+                  You are currently in guest mode. Some features may be limited. Sign in to unlock all features.
+                </span>
+              </div>
+            )}
 
             {/* Submit Buttons */}
             <div className="flex space-x-3 pt-4 animate-slide-up" style={{ animationDelay: '0.7s' }}>

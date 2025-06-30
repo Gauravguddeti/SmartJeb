@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 /**
  * Header Component
  */
-const Header = ({ activeTab, setActiveTab, onAddExpense }) => {
+const Header = ({ activeTab, setActiveTab, onAddExpense, onShowAuth }) => {
   const { user, isGuest, signOut } = useAuth();
 
   const handleSignOut = async () => {
@@ -23,7 +23,23 @@ const Header = ({ activeTab, setActiveTab, onAddExpense }) => {
   ];
 
   return (
-    <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-lg border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-40 animate-slide-down transition-colors duration-300">
+    <>
+      {/* Guest Mode Top Banner */}
+      {isGuest && (
+        <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white py-2 px-4 text-center text-sm font-medium sticky top-0 z-50 animate-slide-down">
+          <div className="flex items-center justify-center space-x-4">
+            <span className="animate-pulse">⚠️ GUEST MODE: Your data will be lost if you refresh or close this page!</span>
+            <button
+              onClick={() => onShowAuth && onShowAuth()}
+              className="ml-4 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-xs font-semibold transition-all duration-300"
+            >
+              Sign Up Now
+            </button>
+          </div>
+        </div>
+      )}
+      
+      <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-lg border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-40 animate-slide-down transition-colors duration-300">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Title */}
@@ -77,6 +93,24 @@ const Header = ({ activeTab, setActiveTab, onAddExpense }) => {
               );
             })}
             
+            {/* Guest Mode Warning and Login Button */}
+            {isGuest && (
+              <div className="flex items-center space-x-3 ml-4">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2 animate-pulse">
+                  <p className="text-xs text-red-700 dark:text-red-300 font-semibold">
+                    ⚠️ GUEST MODE - Data will be lost on refresh!
+                  </p>
+                </div>
+                <button
+                  onClick={() => onShowAuth && onShowAuth()}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg text-sm font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 animate-bounce-gentle"
+                >
+                  <User className="w-4 h-4" />
+                  <span>Sign Up to Save Data</span>
+                </button>
+              </div>
+            )}
+            
             {/* Add Expense Button */}
             <button
               onClick={onAddExpense}
@@ -95,6 +129,18 @@ const Header = ({ activeTab, setActiveTab, onAddExpense }) => {
                 </div>
               )}
               
+              {/* Back to Home button for guest mode */}
+              {isGuest && (
+                <button
+                  onClick={() => window.location.href = '/'}
+                  className="flex items-center space-x-2 px-3 py-2 rounded-xl text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-all duration-300"
+                  title="Back to Home"
+                >
+                  <Home className="w-4 h-4" />
+                  <span className="text-sm font-medium">Home</span>
+                </button>
+              )}
+              
               {(user || isGuest) && (
                 <button
                   onClick={handleSignOut}
@@ -110,6 +156,7 @@ const Header = ({ activeTab, setActiveTab, onAddExpense }) => {
         </div>
       </div>
     </header>
+    </>
   );
 };
 

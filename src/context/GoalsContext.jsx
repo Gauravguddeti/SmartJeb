@@ -160,6 +160,18 @@ export const GoalsProvider = ({ children }) => {
         const newGoals = [goal, ...goals];
         setGoals(newGoals);
         saveToStorage(newGoals);
+        
+        // Show guest mode warning
+        if (isGuest) {
+          toast('🎯 Goal saved temporarily! Sign up to keep your goals safe.', {
+            icon: '⚠️',
+            duration: 4000,
+            style: {
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              color: 'white',
+            },
+          });
+        }
       }
       
       toast.success('Goal added successfully!');

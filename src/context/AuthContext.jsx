@@ -44,9 +44,18 @@ export const AuthProvider = ({ children }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null)
-      setIsGuest(false)
-      setLoading(false)
+      const newUser = session?.user ?? null;
+      const wasGuest = isGuest;
+      
+      setUser(newUser);
+      setIsGuest(false);
+      setLoading(false);
+
+      // If user just signed in from guest mode, merge guest data
+      if (newUser && wasGuest && event === 'SIGNED_IN') {
+        // Wait a bit for user state to be properly set, then merge
+        setTimeout(() => mergeGuestDataForUser(newUser), 1000);
+      }
 
       // Handle sign out
       if (event === 'SIGNED_OUT') {
@@ -150,6 +159,87 @@ export const AuthProvider = ({ children }) => {
       toast.error('Error signing out')
     }
   }
+
+  // Merge guest data when user signs in
+  const mergeGuestDataForUser = async (targetUser) => {
+    if (!targetUser || !isSupabaseConfigured || !supabase) return;
+
+    try {
+      // Get guest expenses from localStorage
+      const guestExpenses = localStorage.getItem('smartjeb-expenses');
+      const guestGoals = localStorage.getItem('smartjeb-goals');
+
+      if (guestExpenses) {
+        const expenses = JSON.parse(guestExpenses);
+        if (expenses.length > 0) {
+          // Convert guest expenses to user expenses
+          const userExpenses = expenses.map(expense => ({
+            user_id: targetUser.id,
+            amount: expense.amount,
+            description: expense.description,
+            category: expense.category,
+            date: expense.date,
+            payment_method: expense.paymentMethod || null,
+            notes: expense.note || expense.notes || null,
+            receipt_url: expense.receiptUrl || null,
+            created_at: expense.createdAt || new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }));
+
+          // Save to Supabase
+          const { error } = await supabase
+            .from('expenses')
+            .insert(userExpenses);
+
+          if (error) {
+            console.error('Error merging guest expenses:', error);
+          } else {
+            console.log(`Merged ${userExpenses.length} guest expenses to user account`);
+            toast.success(`Saved ${userExpenses.length} expenses from guest session!`);
+          }
+        }
+      }
+
+      if (guestGoals) {
+        const goals = JSON.parse(guestGoals);
+        if (goals.length > 0) {
+          // Convert guest goals to user goals
+          const userGoals = goals.map(goal => ({
+            user_id: targetUser.id,
+            title: goal.title,
+            target_amount: goal.targetAmount,
+            current_amount: goal.currentAmount || 0,
+            category: goal.category || null,
+            deadline: goal.deadline || null,
+            description: goal.description || null,
+            is_completed: goal.isCompleted || false,
+            created_at: goal.createdAt || new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }));
+
+          // Save to Supabase
+          const { error } = await supabase
+            .from('goals')
+            .insert(userGoals);
+
+          if (error) {
+            console.error('Error merging guest goals:', error);
+          } else {
+            console.log(`Merged ${userGoals.length} guest goals to user account`);
+            toast.success(`Saved ${userGoals.length} goals from guest session!`);
+          }
+        }
+      }
+
+      // Clear guest data after successful merge
+      localStorage.removeItem('smartjeb-expenses');
+      localStorage.removeItem('smartjeb-goals');
+      
+    } catch (error) {
+      console.error('Error merging guest data:', error);
+      toast.error('Some guest data could not be saved');
+    }
+  };
 
   // Enter guest mode
   const enterGuestMode = () => {

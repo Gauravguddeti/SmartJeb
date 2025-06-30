@@ -14,6 +14,12 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-NGW4Z0WBKZ"
 };
 
+// Prevent Firebase from trying to load hosting configuration
+if (typeof window !== 'undefined') {
+  // Override any global Firebase hosting detection
+  window.__firebase_hosting_disabled = true;
+}
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 

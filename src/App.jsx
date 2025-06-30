@@ -27,6 +27,7 @@ const AppContent = () => {
   const [showWelcome, setShowWelcome] = useState(true);
   const [showLanding, setShowLanding] = useState(true);
   const [showAuth, setShowAuth] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   // Initialize dark mode and handle auth state changes
   useEffect(() => {
@@ -34,13 +35,11 @@ const AppContent = () => {
     if (savedSettings) {
       const settings = JSON.parse(savedSettings);
       if (settings.darkMode) {
+        setDarkMode(true);
         document.documentElement.classList.add('dark');
         document.body.classList.add('dark');
       }
     }
-    
-    // Always show landing page first, regardless of auth state
-    // The landing page will handle navigation to the app
   }, []);
 
   // Handle auth state changes
@@ -49,19 +48,18 @@ const AppContent = () => {
       const hasVisited = localStorage.getItem('smartjeb-visited');
       const hasSeenWelcome = localStorage.getItem('smartjeb-welcome-seen');
       
-      // If user is authenticated and has visited before, skip landing page
-      if ((isAuthenticated || isGuest) && hasVisited) {
+      // If user is authenticated or in guest mode, skip landing page
+      if (isAuthenticated || isGuest) {
         setShowLanding(false);
+        localStorage.setItem('smartjeb-visited', 'true');
         
-        // If they've also seen welcome, skip welcome too
+        // If they've seen welcome before, skip welcome too
         if (hasSeenWelcome) {
           setShowWelcome(false);
         }
-      }
-      
-      // Mark as visited when authenticated or in guest mode
-      if (isAuthenticated || isGuest) {
-        localStorage.setItem('smartjeb-visited', 'true');
+      } else {
+        // Not authenticated, show landing page
+        setShowLanding(true);
       }
     }
   }, [loading, isAuthenticated, isGuest]);
@@ -104,6 +102,9 @@ const AppContent = () => {
   const handleAuthSuccess = () => {
     // Auth successful, user state will be updated by AuthContext
     setShowAuth(false);
+    // Skip landing page and go directly to app
+    setShowLanding(false);
+    setShowWelcome(true);
   };
 
   const handleGuestLogin = () => {
@@ -112,6 +113,22 @@ const AppContent = () => {
     setShowLanding(false);
     setShowAuth(false);
     setShowWelcome(true);
+  };
+
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    
+    const settings = { darkMode: newDarkMode };
+    localStorage.setItem('smartjeb-settings', JSON.stringify(settings));
+    
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+    }
   };
 
   const renderActiveComponent = () => {

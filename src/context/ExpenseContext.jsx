@@ -185,7 +185,13 @@ export const ExpenseProvider = ({ children }) => {
     
     try {
       const expenseData = {
-        ...expense,
+        amount: expense.amount,
+        description: expense.description,
+        category: expense.category,
+        date: expense.date,
+        payment_method: expense.paymentMethod || expense.payment_method || null,
+        notes: expense.note || expense.notes || null,
+        receipt_url: expense.receipt || expense.receipt_url || null,
         user_id: user.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -209,9 +215,22 @@ export const ExpenseProvider = ({ children }) => {
     if (!user || !isSupabaseConfigured || !supabase) return;
     
     try {
+      // Map frontend fields to database fields
+      const updateData = {
+        updated_at: new Date().toISOString()
+      };
+      
+      if (updates.amount !== undefined) updateData.amount = updates.amount;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.category !== undefined) updateData.category = updates.category;
+      if (updates.date !== undefined) updateData.date = updates.date;
+      if (updates.paymentMethod !== undefined) updateData.payment_method = updates.paymentMethod;
+      if (updates.note !== undefined) updateData.notes = updates.note;
+      if (updates.receipt !== undefined) updateData.receipt_url = updates.receipt;
+      
       const { data, error } = await supabase
         .from(TABLES.EXPENSES)
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .update(updateData)
         .eq('id', id)
         .eq('user_id', user.id)
         .select()
@@ -436,6 +455,7 @@ export const ExpenseProvider = ({ children }) => {
   const value = {
     ...state,
     addExpense: addNewExpense,
+    createExpense: addNewExpense, // Alias for compatibility
     updateExpense: updateExistingExpense,
     deleteExpense: deleteExistingExpense,
     setFilter,

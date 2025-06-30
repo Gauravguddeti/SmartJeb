@@ -1,24 +1,13 @@
 -- Add new profile fields to existing profiles table
--- Run this in Supabase SQL Editor after the main schema
+-- Run this in Supabase SQL Editor if your profile table doesn't have these fields yet
 
 -- Add new columns to profiles table (will be ignored if they already exist)
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS bio TEXT;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS phone TEXT;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS location TEXT;
 
--- Update the handle_new_user function to include the new fields (optional)
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-    INSERT INTO public.profiles (id, email, name, bio, phone, location)
-    VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'name', ''),
-        '',
-        '',
-        ''
-    );
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+-- Check if the columns were added successfully
+SELECT column_name, data_type, is_nullable 
+FROM information_schema.columns 
+WHERE table_name = 'profiles' 
+ORDER BY ordinal_position;

@@ -10,7 +10,7 @@ import { categorizeExpense } from '../services/aiService';
  * Features beautiful animations and modern UI design
  */
 const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
-  const { createExpense, modifyExpense } = useExpenses();
+  const { addExpense, updateExpense } = useExpenses();
   const isEditing = Boolean(expense);
 
   const [formData, setFormData] = useState({
@@ -97,9 +97,9 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
       };
 
       if (isEditing) {
-        await modifyExpense({ ...expenseData, id: expense.id });
+        await updateExpense(expense.id, expenseData);
       } else {
-        await createExpense(expenseData);
+        await addExpense(expenseData);
       }
 
       onSuccess();

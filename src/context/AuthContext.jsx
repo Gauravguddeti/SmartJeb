@@ -65,13 +65,27 @@ export const AuthProvider = ({ children }) => {
     // Check for redirect result on page load
     const checkRedirectResult = async () => {
       try {
+        console.log('Checking for redirect result...');
         const result = await getRedirectResult(auth);
         if (result) {
+          console.log('Redirect result found:', result.user?.email);
           toast.success('Signed in with Google!');
+        } else {
+          console.log('No redirect result found');
         }
       } catch (error) {
         console.error('Redirect sign-in error:', error);
-        toast.error('Google sign-in failed. Please try again.');
+        console.error('Redirect error details:', {
+          code: error.code,
+          message: error.message,
+          customData: error.customData
+        });
+        
+        if (error.code === 'auth/network-request-failed') {
+          toast.error('Network error during sign-in. Please try again.');
+        } else {
+          toast.error(`Google sign-in failed: ${error.message}`);
+        }
       }
     };
 
@@ -134,6 +148,12 @@ export const AuthProvider = ({ children }) => {
       const isProduction = window.location.hostname !== 'localhost';
       const shouldUseRedirect = forceRedirect || isProduction;
       
+      console.log('Google Sign-In Environment:', {
+        hostname: window.location.hostname,
+        isProduction,
+        shouldUseRedirect
+      });
+      
       if (shouldUseRedirect) {
         console.log('Using redirect method for Google Sign-In');
         // Use redirect method for production or when explicitly requested
@@ -145,11 +165,17 @@ export const AuthProvider = ({ children }) => {
         console.log('Using popup method for Google Sign-In');
         // Try popup method for localhost only
         const result = await signInWithPopup(auth, googleProvider);
+        console.log('Popup sign-in successful:', result.user?.email);
         toast.success('Signed in with Google!');
         return result.user;
       }
     } catch (error) {
       console.error('Google sign-in error:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        customData: error.customData
+      });
       
       // Handle specific error cases
       if (error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
@@ -168,8 +194,10 @@ export const AuthProvider = ({ children }) => {
         toast.error('This domain is not authorized for Google sign-in. Please contact support.');
       } else if (error.code === 'auth/operation-not-allowed') {
         toast.error('Google sign-in is not enabled. Please contact support.');
+      } else if (error.code === 'auth/network-request-failed') {
+        toast.error('Network error. Please check your connection and try again.');
       } else {
-        toast.error('Google sign-in failed. Please try again.');
+        toast.error(`Google sign-in failed: ${error.message}`);
       }
       throw error;
     } finally {

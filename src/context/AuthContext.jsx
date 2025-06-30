@@ -65,16 +65,16 @@ export const AuthProvider = ({ children }) => {
     // Check for redirect result on page load
     const checkRedirectResult = async () => {
       try {
-        console.log('Checking for redirect result...');
+        console.log('🔍 Checking for redirect result...');
         const result = await getRedirectResult(auth);
         if (result) {
-          console.log('Redirect result found:', result.user?.email);
+          console.log('✅ Redirect result found:', result.user?.email);
           toast.success('Signed in with Google!');
         } else {
-          console.log('No redirect result found');
+          console.log('ℹ️ No redirect result found (this is normal on first load)');
         }
       } catch (error) {
-        console.error('Redirect sign-in error:', error);
+        console.error('❌ Redirect sign-in error:', error);
         console.error('Redirect error details:', {
           code: error.code,
           message: error.message,
@@ -83,6 +83,8 @@ export const AuthProvider = ({ children }) => {
         
         if (error.code === 'auth/network-request-failed') {
           toast.error('Network error during sign-in. Please try again.');
+        } else if (error.code === 'auth/unauthorized-domain') {
+          toast.error('Domain not authorized. Please contact support.');
         } else {
           toast.error(`Google sign-in failed: ${error.message}`);
         }

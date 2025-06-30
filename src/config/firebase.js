@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 // Comprehensive Firebase hosting detection prevention
 if (typeof window !== 'undefined') {
@@ -16,26 +16,23 @@ if (typeof window !== 'undefined') {
     }
   });
   
-  // Intercept and block the problematic init.json request
+  // Intercept and block ONLY the problematic init.json request
   const originalFetch = window.fetch;
   window.fetch = function(...args) {
     const url = args[0];
-    if (typeof url === 'string' && (url.includes('firebase/init.json') || url.includes('firebase/init.ison'))) {
+    if (typeof url === 'string' && 
+        (url.includes('__/firebase/init.json') || 
+         url.includes('__/firebase/init.ison') ||
+         url.endsWith('/firebase/init.json') ||
+         url.endsWith('/firebase/init.ison'))) {
       console.log('Blocked Firebase hosting init request:', url);
       return Promise.reject(new Error('Firebase hosting disabled'));
     }
     return originalFetch.apply(this, args);
   };
   
-  // Also intercept XMLHttpRequest for older requests
-  const originalXHROpen = XMLHttpRequest.prototype.open;
-  XMLHttpRequest.prototype.open = function(method, url, ...args) {
-    if (typeof url === 'string' && (url.includes('firebase/init.json') || url.includes('firebase/init.ison'))) {
-      console.log('Blocked Firebase hosting XHR request:', url);
-      throw new Error('Firebase hosting disabled');
-    }
-    return originalXHROpen.call(this, method, url, ...args);
-  };
+  // Remove XMLHttpRequest interception as it might block legitimate requests
+  // The fetch interception should be sufficient
 }
 
 // Your web app's Firebase configuration
@@ -67,22 +64,8 @@ export const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('email');
 googleProvider.addScope('profile');
 googleProvider.setCustomParameters({
-  prompt: 'select_account',
-  // Add these parameters to improve CSP compatibility
-  hd: undefined, // Remove hosted domain restriction
-  include_granted_scopes: true
+  prompt: 'select_account'
 });
-
-// Add additional configuration to prevent CSP issues
-if (typeof window !== 'undefined') {
-  // Ensure Google scripts are loaded with proper CSP handling
-  const script = document.createElement('script');
-  script.src = 'https://apis.google.com/js/platform.js';
-  script.defer = true;
-  script.onload = () => console.log('Google APIs loaded successfully');
-  script.onerror = () => console.warn('Google APIs failed to load');
-  // Don't actually append - this is just for reference
-}
 
 // Log successful initialization
 console.log('Firebase initialized successfully for production');

@@ -75,8 +75,12 @@ If you're having Google OAuth issues, follow these steps to reset completely:
 5. **Add Authorized redirect URIs:**
    ```
    https://nantppvvwcoyfstdxjry.supabase.co/auth/v1/callback
-   http://localhost:5173/auth/callback
    ```
+   
+   **IMPORTANT: Do NOT add localhost URLs here!** 
+   - Only use the Supabase callback URL
+   - Localhost URLs can cause redirect issues
+   - Supabase will handle the final redirect to your local app
    
 6. **Save and copy:**
    - Client ID (starts with numbers, ends with .googleusercontent.com)
@@ -93,9 +97,12 @@ If you're having Google OAuth issues, follow these steps to reset completely:
 ### Step 4: Update Site URL (IMPORTANT!)
 1. In Supabase Dashboard → Authentication → URL Configuration
 2. Set **Site URL** to: `http://localhost:5173`
-3. Add **Redirect URLs**:
-   - `http://localhost:5173`
-   - `http://localhost:5173/auth/callback`
+3. **Do NOT add redirect URLs manually** - Supabase handles this automatically
+4. **Make sure your dev server is running** before testing:
+   ```bash
+   npm run dev
+   ```
+   Should show: "Local: http://localhost:5173"
 
 ### Step 5: Test Configuration
 1. Start your local dev server: `npm run dev`
@@ -107,7 +114,39 @@ If you're having Google OAuth issues, follow these steps to reset completely:
 ### Issue: "Error 400: redirect_uri_mismatch"
 **Solution**: Check that redirect URIs in Google Cloud Console exactly match:
 - `https://nantppvvwcoyfstdxjry.supabase.co/auth/v1/callback`
-- `http://localhost:5173/auth/callback`
+- **Remove any localhost URLs from Google Cloud Console**
+
+### Issue: OAuth redirects to localhost but gets "refused to connect"
+**Solution**: 
+1. **Make sure your dev server is running**: `npm run dev`
+2. **Remove localhost URLs** from Google Cloud Console redirect URIs
+3. **Only use Supabase callback URL**: `https://nantppvvwcoyfstdxjry.supabase.co/auth/v1/callback`
+4. **Set Site URL in Supabase** to: `http://localhost:5173`
+
+### Issue: After Google consent screen, goes to localhost but fails
+**This is your current issue! Follow these steps:**
+
+1. **First, make sure dev server is running:**
+   ```bash
+   npm run dev
+   ```
+   You should see: "Local: http://localhost:5173/"
+
+2. **Clean up Google Cloud Console:**
+   - Go to Google Cloud Console → APIs & Services → Credentials
+   - Edit your OAuth 2.0 Client ID
+   - **Remove ALL localhost URLs** from "Authorized redirect URIs"
+   - **Only keep**: `https://nantppvvwcoyfstdxjry.supabase.co/auth/v1/callback`
+
+3. **Check Supabase Site URL:**
+   - Supabase Dashboard → Authentication → URL Configuration
+   - Site URL should be: `http://localhost:5173`
+   - Clear any custom redirect URLs
+
+4. **Test again:**
+   - Go to `http://localhost:5173` (make sure server is running)
+   - Click "Sign in with Google"
+   - After Google consent, it should redirect back to your local app
 
 ### Issue: "Error 403: access_denied"
 **Solution**: 
@@ -151,6 +190,36 @@ If you're having Google OAuth issues, follow these steps to reset completely:
 - **Supabase URL**: https://nantppvvwcoyfstdxjry.supabase.co
 - **Project Ref**: nantppvvwcoyfstdxjry
 - **Required Redirect URI**: https://nantppvvwcoyfstdxjry.supabase.co/auth/v1/callback
-- **Local Redirect URI**: http://localhost:5173/auth/callback
+- **Site URL in Supabase**: http://localhost:5173
+- **Dev server must be running**: npm run dev (on port 5173)
 
 If you continue having issues, create a completely new Google Cloud project and follow these steps exactly.
+
+## 🚀 **FOR VERCEL DEPLOYMENT (PRODUCTION)**
+
+### Your Vercel URL: `https://smarjeb.vercel.app`
+
+**To make Google OAuth work on your Vercel website, follow these steps:**
+
+### Step 1: No changes needed in Google Cloud Console
+- Your current redirect URI is already correct: `https://nantppvvwcoyfstdxjry.supabase.co/auth/v1/callback`
+- This works for both localhost AND Vercel!
+
+### Step 2: Update Supabase Site URL for Production
+1. Go to **Supabase Dashboard** → **Authentication** → **URL Configuration**
+2. **Change Site URL** from `http://localhost:5173` to:
+   ```
+   https://smarjeb.vercel.app
+   ```
+3. **Save the changes**
+
+### Step 3: Test on Vercel
+1. Go to: `https://smarjeb.vercel.app`
+2. Click "Sign in with Google"
+3. It should now work perfectly!
+
+### Step 4: Switching Between Development and Production
+- **For local development**: Set Site URL to `http://localhost:5173`
+- **For Vercel production**: Set Site URL to `https://smarjeb.vercel.app`
+
+**You only need to change the Site URL in Supabase when switching between environments.**

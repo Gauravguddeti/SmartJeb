@@ -5,7 +5,7 @@ import { useExpenses } from '../context/ExpenseContext';
 /**
  * Welcome Component - Onboarding experience for new users
  */
-const Welcome = ({ onComplete }) => {
+const Welcome = ({ onComplete, isGuest = false }) => {
   const { expenses } = useExpenses();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
@@ -23,14 +23,21 @@ const Welcome = ({ onComplete }) => {
 
   const steps = [
     {
-      title: "Welcome to SmartJeb! 🎉",
-      subtitle: "Your smart expense tracking companion",
-      description: "Track your daily expenses with AI-powered insights and beautiful analytics. Let's get you started!",
+      title: isGuest ? "Welcome to SmartJeb! 🎉 (Guest Mode)" : "Welcome to SmartJeb! 🎉",
+      subtitle: isGuest ? "Trying out SmartJeb - Data won't be saved" : "Your smart expense tracking companion",
+      description: isGuest 
+        ? "You're using SmartJeb in guest mode. Your data won't be saved permanently. Sign up to keep your expenses safe!"
+        : "Track your daily expenses with AI-powered insights and beautiful analytics. Let's get you started!",
       icon: PiggyBank,
       color: "primary",
-      features: [
-        "🤖 AI-powered expense categorization",
+      features: isGuest ? [
+        "⚠️ Guest mode - data is temporary",
+        "🤖 AI-powered expense categorization", 
         "📊 Beautiful charts and analytics",
+        "💾 Sign up to save your data permanently"
+      ] : [
+        "🤖 AI-powered expense categorization",
+        "📊 Beautiful charts and analytics", 
         "🎯 Goal tracking and budgeting",
         "🔒 100% privacy - data stays on your device"
       ]

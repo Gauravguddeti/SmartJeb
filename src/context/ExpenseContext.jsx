@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { categorizeExpense, trainCategorization } from '../services/aiService.js';
+import { useAuth } from './AuthContext';
+import { supabase, TABLES, isSupabaseConfigured } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 const ExpenseContext = createContext();
@@ -155,24 +157,114 @@ const expenseReducer = (state, action) => {
  */
 export const ExpenseProvider = ({ children }) => {
   const [state, dispatch] = useReducer(expenseReducer, initialState);
+  const { user, isGuest } = useAuth();
 
-  // Load expenses from localStorage on mount
+  // Supabase operations
+  const loadExpensesFromSupabase = async () => {
+    if (!user || !isSupabaseConfigured || !supabase) return;
+    
+    dispatch({ type: ACTIONS.SET_LOADING, payload: true });
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.EXPENSES)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      dispatch({ type: ACTIONS.SET_EXPENSES, payload: data || [] });
+    } catch (error) {
+      console.error('Error loading expenses from Supabase:', error);
+      dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
+      toast.error('Failed to load expenses');
+    }
+  };
+
+  const saveExpenseToSupabase = async (expense) => {
+    if (!user || !isSupabaseConfigured || !supabase) return;
+    
+    try {
+      const expenseData = {
+        ...expense,
+        user_id: user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
+        .from(TABLES.EXPENSES)
+        .insert([expenseData])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error saving expense to Supabase:', error);
+      throw error;
+    }
+  };
+
+  const updateExpenseInSupabase = async (id, updates) => {
+    if (!user || !isSupabaseConfigured || !supabase) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.EXPENSES)
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error updating expense in Supabase:', error);
+      throw error;
+    }
+  };
+
+  const deleteExpenseFromSupabase = async (id) => {
+    if (!user || !isSupabaseConfigured || !supabase) return;
+    
+    try {
+      const { error } = await supabase
+        .from(TABLES.EXPENSES)
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting expense from Supabase:', error);
+      throw error;
+    }
+  };
+
+  // Load expenses based on auth state
   useEffect(() => {
     const loadExpenses = () => {
-      try {
-        const savedExpenses = localStorage.getItem('smartjeb-expenses');
-        if (savedExpenses) {
-          const expenses = JSON.parse(savedExpenses);
-          dispatch({ type: ACTIONS.SET_EXPENSES, payload: expenses });
+      if (user && !isGuest && isSupabaseConfigured) {
+        // Load from Supabase for authenticated users
+        loadExpensesFromSupabase();
+      } else {
+        // Load from localStorage for guests or when Supabase not configured
+        try {
+          const savedExpenses = localStorage.getItem('smartjeb-expenses');
+          if (savedExpenses) {
+            const expenses = JSON.parse(savedExpenses);
+            dispatch({ type: ACTIONS.SET_EXPENSES, payload: expenses });
+          }
+        } catch (error) {
+          console.error('Error loading expenses:', error);
+          toast.error('Failed to load expenses');
         }
-      } catch (error) {
-        console.error('Error loading expenses:', error);
-        toast.error('Failed to load expenses');
       }
     };
 
     loadExpenses();
-  }, []);
+  }, [user, isGuest]);
 
   // Helper function to save expenses to localStorage
   const saveToStorage = (expenses) => {
@@ -197,15 +289,23 @@ export const ExpenseProvider = ({ children }) => {
 
       const expense = {
         ...expenseData,
-        id: Date.now().toString(), // Simple ID generation
+        id: user && !isGuest ? undefined : Date.now().toString(), // Let Supabase generate ID for authenticated users
         category,
         createdAt: new Date(),
         updatedAt: new Date()
       };
 
-      const newExpenses = [expense, ...state.expenses];
-      dispatch({ type: ACTIONS.ADD_EXPENSE, payload: expense });
-      saveToStorage(newExpenses);
+      if (user && !isGuest && isSupabaseConfigured) {
+        // Save to Supabase for authenticated users
+        const savedExpense = await saveExpenseToSupabase(expense);
+        dispatch({ type: ACTIONS.ADD_EXPENSE, payload: savedExpense });
+      } else {
+        // Save to localStorage for guests or when Supabase not configured
+        expense.id = Date.now().toString();
+        const newExpenses = [expense, ...state.expenses];
+        dispatch({ type: ACTIONS.ADD_EXPENSE, payload: expense });
+        saveToStorage(newExpenses);
+      }
       
       // Train AI with user's categorization
       await trainCategorization(expenseData.description, category);
@@ -232,12 +332,18 @@ export const ExpenseProvider = ({ children }) => {
         updatedAt: new Date()
       };
 
-      const updatedExpenses = state.expenses.map(expense => 
-        expense.id === id ? { ...expense, ...updatedData } : expense
-      );
-
-      dispatch({ type: ACTIONS.UPDATE_EXPENSE, payload: { id, updates: updatedData } });
-      saveToStorage(updatedExpenses);
+      if (user && !isGuest && isSupabaseConfigured) {
+        // Update in Supabase for authenticated users
+        const updatedExpense = await updateExpenseInSupabase(id, updatedData);
+        dispatch({ type: ACTIONS.UPDATE_EXPENSE, payload: { id, updates: updatedExpense } });
+      } else {
+        // Update in localStorage for guests or when Supabase not configured
+        const updatedExpenses = state.expenses.map(expense => 
+          expense.id === id ? { ...expense, ...updatedData } : expense
+        );
+        dispatch({ type: ACTIONS.UPDATE_EXPENSE, payload: { id, updates: updatedData } });
+        saveToStorage(updatedExpenses);
+      }
       
       toast.success('Expense updated successfully!');
     } catch (error) {
@@ -255,9 +361,16 @@ export const ExpenseProvider = ({ children }) => {
     try {
       dispatch({ type: ACTIONS.SET_LOADING, payload: true });
 
-      const updatedExpenses = state.expenses.filter(expense => expense.id !== id);
-      dispatch({ type: ACTIONS.DELETE_EXPENSE, payload: id });
-      saveToStorage(updatedExpenses);
+      if (user && !isGuest && isSupabaseConfigured) {
+        // Delete from Supabase for authenticated users
+        await deleteExpenseFromSupabase(id);
+        dispatch({ type: ACTIONS.DELETE_EXPENSE, payload: id });
+      } else {
+        // Delete from localStorage for guests or when Supabase not configured
+        const updatedExpenses = state.expenses.filter(expense => expense.id !== id);
+        dispatch({ type: ACTIONS.DELETE_EXPENSE, payload: id });
+        saveToStorage(updatedExpenses);
+      }
       
       toast.success('Expense deleted successfully!');
     } catch (error) {

@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
+import { supabase, TABLES, isSupabaseConfigured } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 const GoalsContext = createContext();
@@ -14,24 +16,115 @@ export const useGoals = () => {
 export const GoalsProvider = ({ children }) => {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { user, isGuest } = useAuth();
 
-  // Load goals from localStorage on mount
+  // Supabase operations
+  const loadGoalsFromSupabase = async () => {
+    if (!user || !isSupabaseConfigured || !supabase) return;
+    
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.GOALS)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setGoals(data || []);
+    } catch (error) {
+      console.error('Error loading goals from Supabase:', error);
+      toast.error('Failed to load goals');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveGoalToSupabase = async (goal) => {
+    if (!user || !isSupabaseConfigured || !supabase) return;
+    
+    try {
+      const goalData = {
+        ...goal,
+        user_id: user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
+        .from(TABLES.GOALS)
+        .insert([goalData])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error saving goal to Supabase:', error);
+      throw error;
+    }
+  };
+
+  const updateGoalInSupabase = async (id, updates) => {
+    if (!user || !isSupabaseConfigured || !supabase) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.GOALS)
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error updating goal in Supabase:', error);
+      throw error;
+    }
+  };
+
+  const deleteGoalFromSupabase = async (id) => {
+    if (!user || !isSupabaseConfigured || !supabase) return;
+    
+    try {
+      const { error } = await supabase
+        .from(TABLES.GOALS)
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting goal from Supabase:', error);
+      throw error;
+    }
+  };
+
+  // Load goals based on auth state
   useEffect(() => {
     const loadGoals = () => {
-      try {
-        const savedGoals = localStorage.getItem('smartjeb-goals');
-        if (savedGoals) {
-          const goalsData = JSON.parse(savedGoals);
-          setGoals(goalsData);
+      if (user && !isGuest && isSupabaseConfigured) {
+        // Load from Supabase for authenticated users
+        loadGoalsFromSupabase();
+      } else {
+        // Load from localStorage for guests or when Supabase not configured
+        try {
+          const savedGoals = localStorage.getItem('smartjeb-goals');
+          if (savedGoals) {
+            const goalsData = JSON.parse(savedGoals);
+            setGoals(goalsData);
+          }
+        } catch (error) {
+          console.error('Error loading goals:', error);
+          toast.error('Failed to load goals');
         }
-      } catch (error) {
-        console.error('Error loading goals:', error);
-        toast.error('Failed to load goals');
       }
     };
 
     loadGoals();
-  }, []);
+  }, [user, isGuest]);
 
   // Helper function to save goals to localStorage
   const saveToStorage = (goalsData) => {
@@ -50,16 +143,24 @@ export const GoalsProvider = ({ children }) => {
 
       const goal = {
         ...goalData,
-        id: Date.now().toString(), // Simple ID generation
+        id: user && !isGuest ? undefined : Date.now().toString(), // Let Supabase generate ID for authenticated users
         progress: 0,
         completed: false,
         createdAt: new Date(),
         updatedAt: new Date()
       };
 
-      const newGoals = [goal, ...goals];
-      setGoals(newGoals);
-      saveToStorage(newGoals);
+      if (user && !isGuest && isSupabaseConfigured) {
+        // Save to Supabase for authenticated users
+        const savedGoal = await saveGoalToSupabase(goal);
+        setGoals([savedGoal, ...goals]);
+      } else {
+        // Save to localStorage for guests or when Supabase not configured
+        goal.id = Date.now().toString();
+        const newGoals = [goal, ...goals];
+        setGoals(newGoals);
+        saveToStorage(newGoals);
+      }
       
       toast.success('Goal added successfully!');
       return goal;
@@ -82,12 +183,21 @@ export const GoalsProvider = ({ children }) => {
         updatedAt: new Date()
       };
 
-      const updatedGoals = goals.map(goal => 
-        goal.id === id ? { ...goal, ...updatedData } : goal
-      );
-
-      setGoals(updatedGoals);
-      saveToStorage(updatedGoals);
+      if (user && !isGuest && isSupabaseConfigured) {
+        // Update in Supabase for authenticated users
+        const updatedGoal = await updateGoalInSupabase(id, updatedData);
+        const updatedGoals = goals.map(goal => 
+          goal.id === id ? updatedGoal : goal
+        );
+        setGoals(updatedGoals);
+      } else {
+        // Update in localStorage for guests or when Supabase not configured
+        const updatedGoals = goals.map(goal => 
+          goal.id === id ? { ...goal, ...updatedData } : goal
+        );
+        setGoals(updatedGoals);
+        saveToStorage(updatedGoals);
+      }
       
       toast.success('Goal updated successfully!');
     } catch (error) {
@@ -104,9 +214,17 @@ export const GoalsProvider = ({ children }) => {
     try {
       setLoading(true);
 
-      const updatedGoals = goals.filter(goal => goal.id !== id);
-      setGoals(updatedGoals);
-      saveToStorage(updatedGoals);
+      if (user && !isGuest && isSupabaseConfigured) {
+        // Delete from Supabase for authenticated users
+        await deleteGoalFromSupabase(id);
+        const updatedGoals = goals.filter(goal => goal.id !== id);
+        setGoals(updatedGoals);
+      } else {
+        // Delete from localStorage for guests or when Supabase not configured
+        const updatedGoals = goals.filter(goal => goal.id !== id);
+        setGoals(updatedGoals);
+        saveToStorage(updatedGoals);
+      }
       
       toast.success('Goal deleted successfully!');
     } catch (error) {

@@ -1,10 +1,17 @@
 import React from 'react';
-import { Menu, Home, Receipt, BarChart3, Target, Download, Plus, Settings } from 'lucide-react';
+import { Menu, Home, Receipt, BarChart3, Target, Download, Plus, Settings, LogOut, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * Header Component
  */
 const Header = ({ activeTab, setActiveTab, onAddExpense }) => {
+  const { user, isGuest, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    // Redirect or show landing page logic can be handled in App.jsx
+  };
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -27,10 +34,19 @@ const Header = ({ activeTab, setActiveTab, onAddExpense }) => {
               className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28"
             />
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                SmartJeb
-              </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">You buy. We judge. Gently.</p>
+              <div className="flex items-center space-x-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                  SmartJeb
+                </h1>
+                {isGuest && (
+                  <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                    GUEST
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+                {isGuest ? "Guest mode - Data won't be saved" : "You buy. We judge. Gently."}
+              </p>
             </div>
           </div>
 
@@ -69,6 +85,27 @@ const Header = ({ activeTab, setActiveTab, onAddExpense }) => {
               <Plus className="w-4 h-4" />
               <span className="text-sm font-medium">Add Expense</span>
             </button>
+
+            {/* User Profile / Sign Out */}
+            <div className="flex items-center space-x-3 ml-4">
+              {user && !isGuest && (
+                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
+                  <User className="w-4 h-4" />
+                  <span>{user.email}</span>
+                </div>
+              )}
+              
+              {(user || isGuest) && (
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center space-x-2 px-3 py-2 rounded-xl text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-all duration-300"
+                  title={isGuest ? "Exit Guest Mode" : "Sign Out"}
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="text-sm font-medium">{isGuest ? "Exit" : "Sign Out"}</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ExpenseProvider } from './context/ExpenseContext';
 import { GoalsProvider } from './context/GoalsContext';
 import Header from './components/Header';
@@ -13,16 +14,21 @@ import Export from './components/Export';
 import Settings from './components/Settings';
 import Welcome from './components/Welcome';
 import AIChatbot from './components/AIChatbot';
+import LandingPage from './components/LandingPage';
+import AuthModal from './components/AuthModal';
 
 /**
  * Main App Component
  */
-function App() {
+const AppContent = () => {
+  const { user, loading, isGuest, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('expenses');
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [showLanding, setShowLanding] = useState(true);
+  const [showAuth, setShowAuth] = useState(false);
 
-  // Initialize dark mode on app start
+  // Initialize dark mode and handle auth state changes
   useEffect(() => {
     const savedSettings = localStorage.getItem('smartjeb-settings');
     if (savedSettings) {
@@ -32,7 +38,61 @@ function App() {
         document.body.classList.add('dark');
       }
     }
+    
+    // Check if user has visited before
+    const hasVisited = localStorage.getItem('smartjeb-visited');
+    if (hasVisited && !isAuthenticated && !isGuest) {
+      setShowLanding(false);
+    }
   }, []);
+
+  // Handle auth state changes
+  useEffect(() => {
+    if (isAuthenticated || isGuest) {
+      localStorage.setItem('smartjeb-visited', 'true');
+      setShowLanding(false);
+      setShowWelcome(true);
+    }
+  }, [isAuthenticated, isGuest]);
+
+  // Show loading spinner while auth is initializing
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  const handleEnterApp = () => {
+    // This is for "Try App" button - direct guest access with warning
+    localStorage.setItem('smartjeb-visited', 'true');
+    setShowLanding(false);
+    setShowWelcome(true); // Show welcome screen with guest warning
+  };
+
+  const handleGetStarted = () => {
+    // This is for "Get Started" button - show auth modal
+    setShowAuth(true);
+  };
+
+  const handleShowAuth = () => {
+    setShowAuth(true);
+  };
+
+  const handleCloseAuth = () => {
+    setShowAuth(false);
+  };
+
+  const handleAuthSuccess = () => {
+    // Auth successful, user state will be updated by AuthContext
+    setShowAuth(false);
+  };
+
+  const handleGuestLogin = () => {
+    // Guest mode is handled by AuthContext.enterGuestMode()
+    setShowWelcome(true);
+  };
 
   const renderActiveComponent = () => {
     switch (activeTab) {
@@ -51,13 +111,57 @@ function App() {
       default:
         return <ExpenseList onAddExpense={() => setShowExpenseForm(true)} />;
     }
-  };  return (
+  };
+
+  // Show landing page if user hasn't visited before
+  if (showLanding) {
+    return (
+      <>
+        <LandingPage 
+          onEnterApp={handleEnterApp}
+          onGetStarted={handleGetStarted}
+          onShowAuth={handleShowAuth}
+        />
+        <AuthModal 
+          isOpen={showAuth}
+          onClose={handleCloseAuth}
+          onGuestLogin={handleGuestLogin}
+          onSuccess={handleAuthSuccess}
+        />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+              borderRadius: '12px',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+            },
+            success: {
+              style: {
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+              },
+            },
+            error: {
+              style: {
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+              },
+            },
+          }}
+        />
+      </>
+    );
+  }  return (
     <ExpenseProvider>
       <GoalsProvider>
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 animate-fade-in transition-colors duration-300 flex flex-col">
           {/* Welcome Screen */}
           {showWelcome && (
-            <Welcome onComplete={() => setShowWelcome(false)} />
+            <Welcome 
+              onComplete={() => setShowWelcome(false)} 
+              isGuest={!isAuthenticated}
+            />
           )}
 
           {/* Toast notifications */}
@@ -89,6 +193,7 @@ function App() {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             onAddExpense={() => setShowExpenseForm(true)}
+            isGuest={!isAuthenticated}
           />
 
           {/* Main content */}
@@ -166,6 +271,15 @@ function App() {
         </div>
       </GoalsProvider>
     </ExpenseProvider>
+  );
+};
+
+// Main App wrapper with AuthProvider
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

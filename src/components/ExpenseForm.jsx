@@ -162,20 +162,10 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
 
         {/* Guest Mode Warning */}
         {isGuest && (
-          <div className="mx-6 mt-4 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 animate-slide-down">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center animate-bounce-gentle">
-                <span className="text-red-600 font-bold text-sm">⚠️</span>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-red-800 font-semibold">
-                  Guest Mode - This expense won't be saved permanently!
-                </p>
-                <p className="text-xs text-red-600 mt-1">
-                  Sign up to keep your expenses safe and sync across devices.
-                </p>
-              </div>
-            </div>
+          <div className="mx-6 mt-4 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+            <p className="text-sm text-orange-700 dark:text-orange-300 font-medium">
+              💡 Guest mode: This expense won't be saved permanently. Sign up to keep your data safe.
+            </p>
           </div>
         )}
 

@@ -137,20 +137,10 @@ const Goals = () => {
 
       {/* Guest Mode Warning */}
       {isGuest && (
-        <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-4 animate-slide-down">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-              <span className="text-red-600 font-bold text-sm">⚠️</span>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm text-red-800 font-semibold">
-                Guest Mode - Your goals won't be saved permanently!
-              </p>
-              <p className="text-xs text-red-600 mt-1">
-                Create an account to keep your goals and track progress over time.
-              </p>
-            </div>
-          </div>
+        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
+          <p className="text-sm text-orange-700 dark:text-orange-300 font-medium">
+            💡 Guest mode: Your goals won't be saved permanently. Create an account to keep them safe.
+          </p>
         </div>
       )}
 

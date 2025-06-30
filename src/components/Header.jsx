@@ -23,23 +23,7 @@ const Header = ({ activeTab, setActiveTab, onAddExpense, onShowAuth }) => {
   ];
 
   return (
-    <>
-      {/* Guest Mode Top Banner */}
-      {isGuest && (
-        <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white py-2 px-4 text-center text-sm font-medium sticky top-0 z-50 animate-slide-down">
-          <div className="flex items-center justify-center space-x-4">
-            <span className="animate-pulse">⚠️ GUEST MODE: Your data will be lost if you refresh or close this page!</span>
-            <button
-              onClick={() => onShowAuth && onShowAuth()}
-              className="ml-4 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-xs font-semibold transition-all duration-300"
-            >
-              Sign Up Now
-            </button>
-          </div>
-        </div>
-      )}
-      
-      <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-lg border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-40 animate-slide-down transition-colors duration-300">
+    <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-lg border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-40 animate-slide-down transition-colors duration-300">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Title */}
@@ -96,17 +80,17 @@ const Header = ({ activeTab, setActiveTab, onAddExpense, onShowAuth }) => {
             {/* Guest Mode Warning and Login Button */}
             {isGuest && (
               <div className="flex items-center space-x-3 ml-4">
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2 animate-pulse">
-                  <p className="text-xs text-red-700 dark:text-red-300 font-semibold">
-                    ⚠️ GUEST MODE - Data will be lost on refresh!
+                <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg px-3 py-2">
+                  <p className="text-xs text-orange-700 dark:text-orange-300 font-medium">
+                    ⚠️ Guest mode - Data won't be saved
                   </p>
                 </div>
                 <button
                   onClick={() => onShowAuth && onShowAuth()}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg text-sm font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 animate-bounce-gentle"
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors duration-300"
                 >
                   <User className="w-4 h-4" />
-                  <span>Sign Up to Save Data</span>
+                  <span>Sign Up</span>
                 </button>
               </div>
             )}
@@ -156,7 +140,6 @@ const Header = ({ activeTab, setActiveTab, onAddExpense, onShowAuth }) => {
         </div>
       </div>
     </header>
-    </>
   );
 };
 

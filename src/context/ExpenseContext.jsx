@@ -324,18 +324,6 @@ export const ExpenseProvider = ({ children }) => {
         const newExpenses = [expense, ...state.expenses];
         dispatch({ type: ACTIONS.ADD_EXPENSE, payload: expense });
         saveToStorage(newExpenses);
-        
-        // Show guest mode warning
-        if (isGuest) {
-          toast('💾 Expense saved temporarily! Sign up to keep your data safe.', {
-            icon: '⚠️',
-            duration: 4000,
-            style: {
-              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-              color: 'white',
-            },
-          });
-        }
       }
       
       // Train AI with user's categorization

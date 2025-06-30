@@ -16,13 +16,12 @@ import Welcome from './components/Welcome';
 import AIChatbot from './components/AIChatbot';
 import LandingPage from './components/LandingPage';
 import AuthModal from './components/AuthModal';
-import GuestModePrompt from './components/GuestModePrompt';
 
 /**
  * Main App Component
  */
 const AppContent = () => {
-  const { user, loading, isGuest, isAuthenticated } = useAuth();
+  const { user, loading, isGuest, isAuthenticated, enterGuestMode } = useAuth();
   const [activeTab, setActiveTab] = useState('expenses');
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
@@ -101,6 +100,7 @@ const AppContent = () => {
 
   const handleTryApp = () => {
     // This is for "Try App" button - guest access with warning
+    enterGuestMode(); // Enter guest mode first
     localStorage.setItem('smartjeb-visited', 'true');
     setShowLanding(false);
     setShowWelcome(true); // Show welcome screen with guest warning
@@ -176,6 +176,7 @@ const AppContent = () => {
       <>
         <LandingPage 
           onEnterApp={handleEnterApp}
+          onTryApp={handleTryApp}
           onGetStarted={handleGetStarted}
           onShowAuth={handleShowAuth}
           user={user}
@@ -328,9 +329,6 @@ const AppContent = () => {
 
           {/* AI Chatbot */}
           <AIChatbot />
-
-          {/* Guest Mode Prompt */}
-          {isGuest && <GuestModePrompt onShowAuth={handleShowAuth} />}
         </div>
       </GoalsProvider>
     </ExpenseProvider>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, Mail, Linkedin, Github, Instagram, Menu, X, Star, CheckCircle, TrendingUp, Shield, Zap, BarChart3 } from 'lucide-react';
 
-const LandingPage = ({ onEnterApp, onGetStarted, onShowAuth, user, isAuthenticated }) => {
+const LandingPage = ({ onEnterApp, onTryApp, onGetStarted, onShowAuth, user, isAuthenticated }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [sliderPosition, setSliderPosition] = useState(50);
   const [reviewForm, setReviewForm] = useState({ email: '', review: '' });
@@ -211,7 +211,7 @@ const LandingPage = ({ onEnterApp, onGetStarted, onShowAuth, user, isAuthenticat
                     Get Started — It's Free! <ArrowRight className="ml-2" size={20} />
                   </button>
                   <button 
-                    onClick={onEnterApp}
+                    onClick={onTryApp}
                     className="border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300"
                   >
                     Try App (Guest Mode)

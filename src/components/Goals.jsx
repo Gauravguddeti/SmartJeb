@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Target, Plus, Edit2, Trash2, TrendingUp, AlertTriangle, CheckCircle, Calendar, DollarSign } from 'lucide-react';
 import { useExpenses } from '../context/ExpenseContext';
+import { useGoals } from '../context/GoalsContext';
 import { formatCurrency } from '../utils/formatters';
 import { format, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
@@ -9,7 +10,7 @@ import { format, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
  */
 const Goals = () => {
   const { expenses } = useExpenses();
-  const [goals, setGoals] = useState([]);
+  const { goals, loading, addGoal, updateGoal, deleteGoal } = useGoals();
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
 
@@ -21,45 +22,41 @@ const Goals = () => {
     description: ''
   });
 
-  // Load goals from localStorage
-  useEffect(() => {
-    const savedGoals = localStorage.getItem('smartjeb-goals');
-    if (savedGoals) {
-      setGoals(JSON.parse(savedGoals));
-    }
-  }, []);
-
-  // Save goals to localStorage
-  useEffect(() => {
-    localStorage.setItem('smartjeb-goals', JSON.stringify(goals));
-  }, [goals]);
-
-  const handleAddGoal = () => {
+  const handleAddGoal = async () => {
     if (!newGoal.title || !newGoal.amount) return;
 
-    const goal = {
-      id: Date.now(),
-      ...newGoal,
-      amount: parseFloat(newGoal.amount),
-      createdAt: new Date().toISOString(),
-      isActive: true
-    };
-
-    setGoals(prev => [...prev, goal]);
-    setNewGoal({ title: '', amount: '', category: 'all', type: 'monthly', description: '' });
-    setShowAddGoal(false);
-  };
-
-  const handleDeleteGoal = (id) => {
-    if (window.confirm('Are you sure you want to delete this goal?')) {
-      setGoals(prev => prev.filter(goal => goal.id !== id));
+    try {
+      await addGoal({
+        ...newGoal,
+        amount: parseFloat(newGoal.amount)
+      });
+      
+      setNewGoal({ title: '', amount: '', category: 'all', type: 'monthly', description: '' });
+      setShowAddGoal(false);
+    } catch (error) {
+      console.error('Error adding goal:', error);
     }
   };
 
-  const toggleGoalStatus = (id) => {
-    setGoals(prev => prev.map(goal => 
-      goal.id === id ? { ...goal, isActive: !goal.isActive } : goal
-    ));
+  const handleDeleteGoal = async (id) => {
+    if (window.confirm('Are you sure you want to delete this goal?')) {
+      try {
+        await deleteGoal(id);
+      } catch (error) {
+        console.error('Error deleting goal:', error);
+      }
+    }
+  };
+
+  const toggleGoalStatus = async (id) => {
+    const goal = goals.find(g => g.id === id);
+    if (goal) {
+      try {
+        await updateGoal(id, { isActive: !goal.isActive });
+      } catch (error) {
+        console.error('Error toggling goal status:', error);
+      }
+    }
   };
 
   const calculateProgress = (goal) => {
@@ -144,7 +141,7 @@ const Goals = () => {
           return (
             <div 
               key={goal.id}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-200/50 animate-slide-up"
+              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-200/50 dark:border-gray-700/50 animate-slide-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               {/* Goal Header */}
@@ -251,7 +248,7 @@ const Goals = () => {
       {/* Add Goal Modal */}
       {showAddGoal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-slide-up">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md animate-slide-up">
             <div className="p-6 border-b border-gray-100">
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Add New Goal</h3>
             </div>

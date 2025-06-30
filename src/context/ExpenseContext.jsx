@@ -1,11 +1,18 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { 
-  getAllExpenses, 
-  addExpense, 
-  updateExpense, 
-  deleteExpense,
-  getExpensesByDateRange 
-} from '../services/database.js';
+  collection, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  getDocs, 
+  query, 
+  where, 
+  orderBy,
+  onSnapshot
+} from 'firebase/firestore';
+import { db } from '../config/firebase';
+import { useAuth } from './AuthContext';
 import { categorizeExpense, trainCategorization } from '../services/aiService.js';
 import toast from 'react-hot-toast';
 
@@ -35,6 +42,59 @@ const initialState = {
   }
 };
 
+// Apply filters to expenses
+const applyFilters = (expenses, filter) => {
+  let filtered = [...expenses];
+
+  // Filter by category
+  if (filter.category !== 'all') {
+    filtered = filtered.filter(expense => expense.category === filter.category);
+  }
+
+  // Filter by search term
+  if (filter.searchTerm) {
+    const searchLower = filter.searchTerm.toLowerCase();
+    filtered = filtered.filter(expense => 
+      expense.description.toLowerCase().includes(searchLower) ||
+      expense.category.toLowerCase().includes(searchLower) ||
+      (expense.note && expense.note.toLowerCase().includes(searchLower))
+    );
+  }
+
+  // Filter by date range
+  if (filter.dateRange !== 'all') {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    switch (filter.dateRange) {
+      case 'today':
+        filtered = filtered.filter(expense => {
+          const expenseDate = new Date(expense.date);
+          return expenseDate >= today;
+        });
+        break;
+      case 'week':
+        const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        filtered = filtered.filter(expense => {
+          const expenseDate = new Date(expense.date);
+          return expenseDate >= weekAgo;
+        });
+        break;
+      case 'month':
+        const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        filtered = filtered.filter(expense => {
+          const expenseDate = new Date(expense.date);
+          return expenseDate >= monthAgo;
+        });
+        break;
+      default:
+        break;
+    }
+  }
+
+  return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+};
+
 // Reducer function
 const expenseReducer = (state, action) => {
   switch (action.type) {
@@ -48,12 +108,13 @@ const expenseReducer = (state, action) => {
       };
     
     case ACTIONS.ADD_EXPENSE:
-      const newExpenses = [...state.expenses, action.payload];
+      const newExpenses = [action.payload, ...state.expenses];
       return {
         ...state,
         expenses: newExpenses,
         filteredExpenses: applyFilters(newExpenses, state.filter),
-        loading: false
+        loading: false,
+        error: null
       };
     
     case ACTIONS.UPDATE_EXPENSE:
@@ -64,7 +125,8 @@ const expenseReducer = (state, action) => {
         ...state,
         expenses: updatedExpenses,
         filteredExpenses: applyFilters(updatedExpenses, state.filter),
-        loading: false
+        loading: false,
+        error: null
       };
     
     case ACTIONS.DELETE_EXPENSE:
@@ -73,7 +135,8 @@ const expenseReducer = (state, action) => {
         ...state,
         expenses: remainingExpenses,
         filteredExpenses: applyFilters(remainingExpenses, state.filter),
-        loading: false
+        loading: false,
+        error: null
       };
     
     case ACTIONS.SET_LOADING:
@@ -102,205 +165,194 @@ const expenseReducer = (state, action) => {
 };
 
 /**
- * Apply filters to expenses
- * @param {Array} expenses - All expenses
- * @param {Object} filter - Filter object
- * @returns {Array} Filtered expenses
- */
-const applyFilters = (expenses, filter) => {
-  let filtered = [...expenses];
-  
-  // Category filter
-  if (filter.category && filter.category !== 'all') {
-    filtered = filtered.filter(expense => expense.category === filter.category);
-  }
-  
-  // Search term filter
-  if (filter.searchTerm) {
-    const term = filter.searchTerm.toLowerCase();
-    filtered = filtered.filter(expense =>
-      expense.description.toLowerCase().includes(term) ||
-      (expense.note && expense.note.toLowerCase().includes(term))
-    );
-  }
-  
-  // Date range filter
-  if (filter.dateRange && filter.dateRange !== 'all') {
-    const now = new Date();
-    let startDate;
-    
-    switch (filter.dateRange) {
-      case 'today':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        break;
-      case 'week':
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
-      default:
-        startDate = new Date(0);
-    }
-    
-    filtered = filtered.filter(expense => new Date(expense.date) >= startDate);
-  }
-  
-  // Sort by date (newest first)
-  return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-};
-
-/**
- * Expense Context Provider
+ * Expense Provider Component
  */
 export const ExpenseProvider = ({ children }) => {
   const [state, dispatch] = useReducer(expenseReducer, initialState);
+  const { user } = useAuth();
 
-  // Load expenses on mount
+  // Load user expenses on auth state change
   useEffect(() => {
-    loadExpenses();
-  }, []);
-
-  /**
-   * Load all expenses from database
-   */
-  const loadExpenses = async () => {
-    try {
-      dispatch({ type: ACTIONS.SET_LOADING, payload: true });
-      const expenses = await getAllExpenses();
-      dispatch({ type: ACTIONS.SET_EXPENSES, payload: expenses });
-    } catch (error) {
-      console.error('Failed to load expenses:', error);
-      dispatch({ type: ACTIONS.SET_ERROR, payload: 'Failed to load expenses' });
-      toast.error('Failed to load expenses');
+    if (!user) {
+      // Clear expenses when user logs out
+      dispatch({ type: ACTIONS.SET_EXPENSES, payload: [] });
+      return;
     }
-  };
 
-  /**
-   * Add a new expense
-   * @param {Object} expenseData - Expense data
-   */
-  const createExpense = async (expenseData) => {
+    dispatch({ type: ACTIONS.SET_LOADING, payload: true });
+
+    // Set up real-time listener for user's expenses
+    const expensesQuery = query(
+      collection(db, 'expenses'),
+      where('userId', '==', user.uid),
+      orderBy('date', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(
+      expensesQuery,
+      (snapshot) => {
+        const expenses = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        dispatch({ type: ACTIONS.SET_EXPENSES, payload: expenses });
+      },
+      (error) => {
+        console.error('Error fetching expenses:', error);
+        dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
+        toast.error('Failed to load expenses');
+      }
+    );
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // Add new expense
+  const addNewExpense = async (expenseData) => {
+    if (!user) {
+      toast.error('You must be logged in to add expenses');
+      return;
+    }
+
     try {
       dispatch({ type: ACTIONS.SET_LOADING, payload: true });
-      
-      // Auto-categorize if no category provided
+
+      // Use AI categorization if category is not provided
       let category = expenseData.category;
-      if (!category || category === 'Other') {
-        category = await categorizeExpense(expenseData.description, expenseData.note);
+      if (!category || category === 'other') {
+        category = await categorizeExpense(expenseData.description);
       }
-      
+
       const expense = {
         ...expenseData,
         category,
-        amount: parseFloat(expenseData.amount)
+        userId: user.uid,
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
+
+      const docRef = await addDoc(collection(db, 'expenses'), expense);
       
-      const id = await addExpense(expense);
-      const newExpense = { ...expense, id };
-      
-      dispatch({ type: ACTIONS.ADD_EXPENSE, payload: newExpense });
-      
-      // Train categorization model
-      if (expenseData.category && expenseData.category !== category) {
-        await trainCategorization(expenseData.description, expenseData.category);
-      }
+      // Train AI with user's categorization
+      await trainCategorization(expenseData.description, category);
       
       toast.success('Expense added successfully!');
-      return newExpense;
+      return { id: docRef.id, ...expense };
     } catch (error) {
-      console.error('Failed to add expense:', error);
-      dispatch({ type: ACTIONS.SET_ERROR, payload: 'Failed to add expense' });
+      console.error('Error adding expense:', error);
+      dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
       toast.error('Failed to add expense');
       throw error;
     }
   };
 
-  /**
-   * Update an existing expense
-   * @param {Object} expenseData - Updated expense data
-   */
-  const modifyExpense = async (expenseData) => {
+  // Update expense
+  const updateExistingExpense = async (id, updates) => {
+    if (!user) {
+      toast.error('You must be logged in to update expenses');
+      return;
+    }
+
     try {
       dispatch({ type: ACTIONS.SET_LOADING, payload: true });
-      
-      const expense = {
-        ...expenseData,
-        amount: parseFloat(expenseData.amount)
+
+      const expenseRef = doc(db, 'expenses', id);
+      const updatedData = {
+        ...updates,
+        updatedAt: new Date()
       };
-      
-      await updateExpense(expense);
-      dispatch({ type: ACTIONS.UPDATE_EXPENSE, payload: expense });
-      
-      // Train categorization model with user correction
-      await trainCategorization(expense.description, expense.category);
+
+      await updateDoc(expenseRef, updatedData);
       
       toast.success('Expense updated successfully!');
-      return expense;
     } catch (error) {
-      console.error('Failed to update expense:', error);
-      dispatch({ type: ACTIONS.SET_ERROR, payload: 'Failed to update expense' });
+      console.error('Error updating expense:', error);
+      dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
       toast.error('Failed to update expense');
       throw error;
     }
   };
 
-  /**
-   * Remove an expense
-   * @param {number} id - Expense ID
-   */
-  const removeExpense = async (id) => {
+  // Delete expense
+  const deleteExistingExpense = async (id) => {
+    if (!user) {
+      toast.error('You must be logged in to delete expenses');
+      return;
+    }
+
     try {
       dispatch({ type: ACTIONS.SET_LOADING, payload: true });
-      await deleteExpense(id);
-      dispatch({ type: ACTIONS.DELETE_EXPENSE, payload: id });
+
+      await deleteDoc(doc(db, 'expenses', id));
+      
       toast.success('Expense deleted successfully!');
     } catch (error) {
-      console.error('Failed to delete expense:', error);
-      dispatch({ type: ACTIONS.SET_ERROR, payload: 'Failed to delete expense' });
+      console.error('Error deleting expense:', error);
+      dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
       toast.error('Failed to delete expense');
+      throw error;
     }
   };
 
-  /**
-   * Update filters
-   * @param {Object} newFilters - New filter values
-   */
-  const updateFilters = (newFilters) => {
-    dispatch({ type: ACTIONS.SET_FILTER, payload: newFilters });
+  // Set filter
+  const setFilter = (newFilter) => {
+    dispatch({ type: ACTIONS.SET_FILTER, payload: newFilter });
   };
 
-  /**
-   * Get expenses for specific date range
-   * @param {Date} startDate - Start date
-   * @param {Date} endDate - End date
-   * @returns {Promise<Array>} Expenses in date range
-   */
-  const getExpensesInRange = async (startDate, endDate) => {
-    try {
-      return await getExpensesByDateRange(startDate, endDate);
-    } catch (error) {
-      console.error('Failed to get expenses in range:', error);
-      toast.error('Failed to load expenses for date range');
-      return [];
-    }
+  // Clear filter
+  const clearFilter = () => {
+    dispatch({ 
+      type: ACTIONS.SET_FILTER, 
+      payload: { 
+        category: 'all', 
+        dateRange: 'all', 
+        searchTerm: '' 
+      } 
+    });
+  };
+
+  // Get expenses by date range
+  const getExpensesByDateRange = (startDate, endDate) => {
+    return state.expenses.filter(expense => {
+      const expenseDate = new Date(expense.date);
+      return expenseDate >= startDate && expenseDate <= endDate;
+    });
+  };
+
+  // Get expense statistics
+  const getExpenseStats = () => {
+    const { expenses } = state;
+    const today = new Date();
+    const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const thisWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const stats = {
+      total: expenses.reduce((sum, expense) => sum + expense.amount, 0),
+      thisMonth: expenses
+        .filter(expense => new Date(expense.date) >= thisMonth)
+        .reduce((sum, expense) => sum + expense.amount, 0),
+      thisWeek: expenses
+        .filter(expense => new Date(expense.date) >= thisWeek)
+        .reduce((sum, expense) => sum + expense.amount, 0),
+      count: expenses.length,
+      categories: expenses.reduce((acc, expense) => {
+        acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+        return acc;
+      }, {})
+    };
+
+    return stats;
   };
 
   const value = {
-    // State
-    expenses: state.expenses,
-    filteredExpenses: state.filteredExpenses,
-    loading: state.loading,
-    error: state.error,
-    filter: state.filter,
-    
-    // Actions
-    createExpense,
-    modifyExpense,
-    removeExpense,
-    updateFilters,
-    loadExpenses,
-    getExpensesInRange
+    ...state,
+    addExpense: addNewExpense,
+    updateExpense: updateExistingExpense,
+    deleteExpense: deleteExistingExpense,
+    setFilter,
+    clearFilter,
+    getExpensesByDateRange,
+    getExpenseStats
   };
 
   return (
@@ -311,8 +363,7 @@ export const ExpenseProvider = ({ children }) => {
 };
 
 /**
- * Hook to use expense context
- * @returns {Object} Expense context value
+ * Custom hook to use expense context
  */
 export const useExpenses = () => {
   const context = useContext(ExpenseContext);
@@ -321,3 +372,5 @@ export const useExpenses = () => {
   }
   return context;
 };
+
+export default ExpenseContext;

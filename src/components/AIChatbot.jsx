@@ -334,7 +334,7 @@ const AIChatbot = () => {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-primary-500 to-primary-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-50 animate-pulse"
+        className="fixed bottom-6 right-6 md:bottom-6 md:right-6 mb-16 md:mb-0 bg-gradient-to-r from-primary-500 to-primary-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-50 animate-pulse"
       >
         <MessageCircle className="w-6 h-6" />
       </button>
@@ -345,7 +345,7 @@ const AIChatbot = () => {
     <div className={`fixed transition-all duration-300 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col z-50 animate-slide-up ${
       isExpanded 
         ? 'bottom-6 right-6 left-6 top-6 md:left-1/4' 
-        : 'bottom-6 right-6 w-96 h-[500px]'
+        : 'bottom-6 right-6 w-96 h-[500px] mb-16 md:mb-0'
     }`}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary-500 to-primary-600 rounded-t-2xl">

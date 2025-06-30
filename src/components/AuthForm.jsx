@@ -53,17 +53,21 @@ const AuthForm = () => {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      // Use redirect method by default in production to avoid CSP issues
-      const useRedirect = window.location.hostname !== 'localhost';
-      await signInWithGoogle(useRedirect);
+      // Always use redirect in production, popup in development
+      const isProduction = window.location.hostname !== 'localhost';
+      console.log('Google Sign-In attempt:', { isProduction, hostname: window.location.hostname });
+      
+      await signInWithGoogle(isProduction);
     } catch (error) {
       console.error('Google sign in error:', error);
-      // If popup failed, try redirect method
-      if (error.code === 'auth/popup-blocked' || error.message.includes('CSP')) {
+      // If any error occurs, try redirect method as fallback
+      if (!error.message.includes('redirect')) {
+        console.log('Retrying with redirect method...');
         try {
           await signInWithGoogle(true); // Force redirect
         } catch (redirectError) {
           console.error('Redirect sign-in also failed:', redirectError);
+          toast.error('Google sign-in failed. Please check your internet connection and try again.');
         }
       }
     } finally {

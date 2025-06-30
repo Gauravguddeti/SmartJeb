@@ -126,18 +126,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signInWithGoogle = async (useRedirect = false) => {
+  const signInWithGoogle = async (forceRedirect = false) => {
     try {
       setLoading(true);
       
-      if (useRedirect) {
-        // Use redirect method for mobile or when popup is blocked
+      // Always use redirect in production environment
+      const isProduction = window.location.hostname !== 'localhost';
+      const shouldUseRedirect = forceRedirect || isProduction;
+      
+      if (shouldUseRedirect) {
+        console.log('Using redirect method for Google Sign-In');
+        // Use redirect method for production or when explicitly requested
         await signInWithRedirect(auth, googleProvider);
         // Note: User will be redirected and page will reload
         // The redirect result will be handled in useEffect
         return;
       } else {
-        // Try popup method first
+        console.log('Using popup method for Google Sign-In');
+        // Try popup method for localhost only
         const result = await signInWithPopup(auth, googleProvider);
         toast.success('Signed in with Google!');
         return result.user;
@@ -146,14 +152,14 @@ export const AuthProvider = ({ children }) => {
       console.error('Google sign-in error:', error);
       
       // Handle specific error cases
-      if (error.code === 'auth/popup-blocked') {
-        toast.error('Popup blocked! Trying alternative method...');
+      if (error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
+        toast.error('Popup blocked! Trying redirect method...');
         // Retry with redirect
         try {
           await signInWithRedirect(auth, googleProvider);
         } catch (redirectError) {
           console.error('Redirect sign-in error:', redirectError);
-          toast.error('Google sign-in failed. Please check your settings and try again.');
+          toast.error('Google sign-in failed. Please try again.');
           throw redirectError;
         }
       } else if (error.code === 'auth/popup-closed-by-user') {

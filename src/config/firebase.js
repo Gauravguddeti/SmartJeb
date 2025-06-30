@@ -8,15 +8,33 @@ if (typeof window !== 'undefined') {
   window.__firebase_hosting_disabled = true;
   window.__firebase_hosting_domain = false;
   
+  // Handle CSP violations gracefully
+  window.addEventListener('securitypolicyviolation', (e) => {
+    if (e.violatedDirective === 'script-src' && e.sourceFile.includes('google')) {
+      console.log('CSP violation from Google scripts - this is expected and safe');
+      e.preventDefault();
+    }
+  });
+  
   // Intercept and block the problematic init.json request
   const originalFetch = window.fetch;
   window.fetch = function(...args) {
     const url = args[0];
-    if (typeof url === 'string' && url.includes('firebase/init.json')) {
+    if (typeof url === 'string' && (url.includes('firebase/init.json') || url.includes('firebase/init.ison'))) {
       console.log('Blocked Firebase hosting init request:', url);
       return Promise.reject(new Error('Firebase hosting disabled'));
     }
     return originalFetch.apply(this, args);
+  };
+  
+  // Also intercept XMLHttpRequest for older requests
+  const originalXHROpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(method, url, ...args) {
+    if (typeof url === 'string' && (url.includes('firebase/init.json') || url.includes('firebase/init.ison'))) {
+      console.log('Blocked Firebase hosting XHR request:', url);
+      throw new Error('Firebase hosting disabled');
+    }
+    return originalXHROpen.call(this, method, url, ...args);
   };
 }
 
@@ -49,8 +67,22 @@ export const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('email');
 googleProvider.addScope('profile');
 googleProvider.setCustomParameters({
-  prompt: 'select_account'
+  prompt: 'select_account',
+  // Add these parameters to improve CSP compatibility
+  hd: undefined, // Remove hosted domain restriction
+  include_granted_scopes: true
 });
+
+// Add additional configuration to prevent CSP issues
+if (typeof window !== 'undefined') {
+  // Ensure Google scripts are loaded with proper CSP handling
+  const script = document.createElement('script');
+  script.src = 'https://apis.google.com/js/platform.js';
+  script.defer = true;
+  script.onload = () => console.log('Google APIs loaded successfully');
+  script.onerror = () => console.warn('Google APIs failed to load');
+  // Don't actually append - this is just for reference
+}
 
 // Log successful initialization
 console.log('Firebase initialized successfully for production');

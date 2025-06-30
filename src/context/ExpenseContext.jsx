@@ -352,6 +352,7 @@ export const ExpenseProvider = ({ children }) => {
     setFilter,
     clearFilter,
     getExpensesByDateRange,
+    getExpensesInRange: getExpensesByDateRange, // Alias for compatibility
     getExpenseStats
   };
 

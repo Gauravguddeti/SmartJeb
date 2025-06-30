@@ -171,7 +171,7 @@ const Dashboard = () => {
           </h3>
           <div className="flex items-center gap-4 mb-4">
             <div>
-              <p className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-primary-600 bg-clip-text text-transparent">{formatCurrency(weeklyData.currentWeekTotal)}</p>
+              <p className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-primary-600 dark:from-gray-100 dark:to-primary-400 bg-clip-text text-transparent">{formatCurrency(weeklyData.currentWeekTotal)}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total spent this week</p>
             </div>
             {weeklyData.percentageChange !== 0 && (

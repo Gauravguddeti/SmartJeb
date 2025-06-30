@@ -1,16 +1,18 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getAnalytics } from 'firebase/analytics';
 
-// Firebase configuration
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  // Replace with your actual Firebase config
-  apiKey: "your-api-key",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "your-app-id"
+  apiKey: "AIzaSyBo379j77KjjE2E5jPB7Uds5Uh3KnLCCtI",
+  authDomain: "smartjeb-4b5e1.firebaseapp.com",
+  projectId: "smartjeb-4b5e1",
+  storageBucket: "smartjeb-4b5e1.firebasestorage.app",
+  messagingSenderId: "522476571447",
+  appId: "1:522476571447:web:29bb5d327bc90acdcaa8b2",
+  measurementId: "G-NGW4Z0WBKZ"
 };
 
 // Initialize Firebase
@@ -22,7 +24,15 @@ export const auth = getAuth(app);
 // Initialize Firestore and get a reference to the service
 export const db = getFirestore(app);
 
-// Google Auth Provider
+// Initialize Analytics
+export const analytics = getAnalytics(app);
+
+// Google Auth Provider with proper configuration
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.addScope('email');
+googleProvider.addScope('profile');
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 export default app;

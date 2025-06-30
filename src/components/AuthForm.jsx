@@ -50,12 +50,16 @@ const AuthForm = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (useRedirect = false) => {
     setIsLoading(true);
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(useRedirect);
     } catch (error) {
       console.error('Google sign in error:', error);
+      // If popup failed, offer redirect option
+      if (error.code === 'auth/popup-blocked' && !useRedirect) {
+        // The AuthContext will automatically try redirect, so we don't need to do anything here
+      }
     } finally {
       setIsLoading(false);
     }
@@ -236,10 +240,10 @@ const AuthForm = () => {
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
             </button>
           </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
-export default AuthForm;
+  export default AuthForm;

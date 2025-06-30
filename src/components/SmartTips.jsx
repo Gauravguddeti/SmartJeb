@@ -174,23 +174,68 @@ const SmartTips = () => {
   const getColorClasses = (color) => {
     switch (color) {
       case 'blue':
-        return { bg: 'from-blue-50 to-blue-100', text: 'text-blue-800', border: 'border-blue-200', icon: 'text-blue-600' };
+        return { 
+          bg: 'from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20', 
+          text: 'text-blue-800 dark:text-blue-200', 
+          border: 'border-blue-200 dark:border-blue-700', 
+          icon: 'text-blue-600 dark:text-blue-400' 
+        };
       case 'purple':
-        return { bg: 'from-purple-50 to-purple-100', text: 'text-purple-800', border: 'border-purple-200', icon: 'text-purple-600' };
+        return { 
+          bg: 'from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20', 
+          text: 'text-purple-800 dark:text-purple-200', 
+          border: 'border-purple-200 dark:border-purple-700', 
+          icon: 'text-purple-600 dark:text-purple-400' 
+        };
       case 'green':
-        return { bg: 'from-green-50 to-green-100', text: 'text-green-800', border: 'border-green-200', icon: 'text-green-600' };
+        return { 
+          bg: 'from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20', 
+          text: 'text-green-800 dark:text-green-200', 
+          border: 'border-green-200 dark:border-green-700', 
+          icon: 'text-green-600 dark:text-green-400' 
+        };
       case 'red':
-        return { bg: 'from-red-50 to-red-100', text: 'text-red-800', border: 'border-red-200', icon: 'text-red-600' };
+        return { 
+          bg: 'from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20', 
+          text: 'text-red-800 dark:text-red-200', 
+          border: 'border-red-200 dark:border-red-700', 
+          icon: 'text-red-600 dark:text-red-400' 
+        };
       case 'orange':
-        return { bg: 'from-orange-50 to-orange-100', text: 'text-orange-800', border: 'border-orange-200', icon: 'text-orange-600' };
+        return { 
+          bg: 'from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20', 
+          text: 'text-orange-800 dark:text-orange-200', 
+          border: 'border-orange-200 dark:border-orange-700', 
+          icon: 'text-orange-600 dark:text-orange-400' 
+        };
       case 'yellow':
-        return { bg: 'from-yellow-50 to-yellow-100', text: 'text-yellow-800', border: 'border-yellow-200', icon: 'text-yellow-600' };
+        return { 
+          bg: 'from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20', 
+          text: 'text-yellow-800 dark:text-yellow-200', 
+          border: 'border-yellow-200 dark:border-yellow-700', 
+          icon: 'text-yellow-600 dark:text-yellow-400' 
+        };
       case 'indigo':
-        return { bg: 'from-indigo-50 to-indigo-100', text: 'text-indigo-800', border: 'border-indigo-200', icon: 'text-indigo-600' };
+        return { 
+          bg: 'from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20', 
+          text: 'text-indigo-800 dark:text-indigo-200', 
+          border: 'border-indigo-200 dark:border-indigo-700', 
+          icon: 'text-indigo-600 dark:text-indigo-400' 
+        };
       case 'primary':
-        return { bg: 'from-primary-50 to-primary-100', text: 'text-primary-800', border: 'border-primary-200', icon: 'text-primary-600' };
+        return { 
+          bg: 'from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20', 
+          text: 'text-primary-800 dark:text-primary-200', 
+          border: 'border-primary-200 dark:border-primary-700', 
+          icon: 'text-primary-600 dark:text-primary-400' 
+        };
       default:
-        return { bg: 'from-gray-50 to-gray-100', text: 'text-gray-800', border: 'border-gray-200', icon: 'text-gray-600' };
+        return { 
+          bg: 'from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700', 
+          text: 'text-gray-800 dark:text-gray-200', 
+          border: 'border-gray-200 dark:border-gray-600', 
+          icon: 'text-gray-600 dark:text-gray-400' 
+        };
     }
   };
 
@@ -211,7 +256,7 @@ const SmartTips = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
           <Lightbulb className="w-5 h-5 text-primary-600" />
           <span>Smart Insights</span>
         </h3>
@@ -219,18 +264,18 @@ const SmartTips = () => {
           <div className="flex items-center space-x-2">
             <button
               onClick={prevTip}
-              className="p-1 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
             >
-              <TrendingDown className="w-4 h-4 text-gray-600 rotate-90" />
+              <TrendingDown className="w-4 h-4 text-gray-600 dark:text-gray-400 rotate-90" />
             </button>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
               {currentTip + 1} of {insights.length}
             </span>
             <button
               onClick={nextTip}
-              className="p-1 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
             >
-              <TrendingUp className="w-4 h-4 text-gray-600 rotate-90" />
+              <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400 rotate-90" />
             </button>
           </div>
         )}
@@ -238,7 +283,7 @@ const SmartTips = () => {
 
       <div className={`bg-gradient-to-r ${colors.bg} p-6 rounded-2xl border ${colors.border} animate-fade-in`}>
         <div className="flex items-start space-x-4">
-          <div className={`p-3 bg-white rounded-xl shadow-sm border ${colors.border}`}>
+          <div className={`p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border ${colors.border}`}>
             <Icon className={`w-6 h-6 ${colors.icon}`} />
           </div>
           
@@ -249,7 +294,7 @@ const SmartTips = () => {
             <p className={`${colors.text} opacity-90 mb-3 leading-relaxed`}>
               {currentInsight.description}
             </p>
-            <div className={`inline-flex items-center space-x-2 bg-white/50 px-3 py-2 rounded-lg border ${colors.border}`}>
+            <div className={`inline-flex items-center space-x-2 bg-white/50 dark:bg-gray-800/50 px-3 py-2 rounded-lg border ${colors.border}`}>
               <Zap className={`w-4 h-4 ${colors.icon}`} />
               <span className={`text-sm font-medium ${colors.text}`}>
                 {currentInsight.action}
@@ -268,7 +313,7 @@ const SmartTips = () => {
               className={`w-2 h-2 rounded-full transition-all duration-300 ${
                 index === currentTip
                   ? 'bg-primary-600 w-6'
-                  : 'bg-gray-300 hover:bg-gray-400'
+                  : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
               }`}
             />
           ))}

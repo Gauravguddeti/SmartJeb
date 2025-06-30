@@ -51,27 +51,43 @@ const AuthForm = () => {
   };
 
   const handleGoogleSignIn = async () => {
+    console.log('🚀 Google Sign-In button clicked');
     setIsLoading(true);
     try {
       // Always use redirect in production, popup in development
       const isProduction = window.location.hostname !== 'localhost';
-      console.log('Google Sign-In attempt:', { isProduction, hostname: window.location.hostname });
+      console.log('🔍 Google Sign-In attempt:', { 
+        isProduction, 
+        hostname: window.location.hostname,
+        userAgent: navigator.userAgent.includes('Chrome') ? 'Chrome' : 'Other'
+      });
       
+      console.log('🔄 Calling signInWithGoogle...');
       await signInWithGoogle(isProduction);
+      console.log('✅ signInWithGoogle completed successfully');
     } catch (error) {
-      console.error('Google sign in error:', error);
+      console.error('❌ Google sign in error:', error);
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        code: error.code,
+        stack: error.stack
+      });
+      
       // If any error occurs, try redirect method as fallback
       if (!error.message.includes('redirect')) {
-        console.log('Retrying with redirect method...');
+        console.log('🔄 Retrying with redirect method...');
         try {
           await signInWithGoogle(true); // Force redirect
+          console.log('✅ Redirect sign-in successful');
         } catch (redirectError) {
-          console.error('Redirect sign-in also failed:', redirectError);
+          console.error('❌ Redirect sign-in also failed:', redirectError);
           toast.error('Google sign-in failed. Please check your internet connection and try again.');
         }
       }
     } finally {
       setIsLoading(false);
+      console.log('🏁 Google Sign-In process completed');
     }
   };
 

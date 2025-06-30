@@ -6,13 +6,13 @@ import { getAnalytics } from 'firebase/analytics';
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyBo379j77KjjE2E5jPB7Uds5Uh3KnLCCtI",
-  authDomain: "smartjeb-4b5e1.firebaseapp.com",
-  projectId: "smartjeb-4b5e1",
-  storageBucket: "smartjeb-4b5e1.firebasestorage.app",
-  messagingSenderId: "522476571447",
-  appId: "1:522476571447:web:29bb5d327bc90acdcaa8b2",
-  measurementId: "G-NGW4Z0WBKZ"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBo379j77KjjE2E5jPB7Uds5Uh3KnLCCtI",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "smartjeb-4b5e1.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "smartjeb-4b5e1",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "smartjeb-4b5e1.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "522476571447",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:522476571447:web:29bb5d327bc90acdcaa8b2",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-NGW4Z0WBKZ"
 };
 
 // Initialize Firebase

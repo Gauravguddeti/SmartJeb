@@ -19,7 +19,32 @@ if (isSupabaseConfigured) {
       auth: {
         autoRefreshToken: true,
         persistSession: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: true,
+        flowType: 'pkce',
+        storageKey: 'pennylog-auth-token',
+        storage: {
+          getItem: (key) => {
+            if (typeof window !== 'undefined') {
+              return window.localStorage.getItem(key);
+            }
+            return null;
+          },
+          setItem: (key, value) => {
+            if (typeof window !== 'undefined') {
+              window.localStorage.setItem(key, value);
+            }
+          },
+          removeItem: (key) => {
+            if (typeof window !== 'undefined') {
+              window.localStorage.removeItem(key);
+            }
+          },
+        },
+      },
+      global: {
+        headers: {
+          'X-Client-Info': 'pennylog-expense-tracker'
+        }
       }
     })
   } catch (error) {

@@ -159,7 +159,7 @@ const Goals = () => {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg mb-1">{goal.title}</h3>
-                  <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-lg">
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg">
                     {goal.category === 'all' ? 'All Categories' : goal.category} • {goal.type}
                   </span>
                 </div>
@@ -177,7 +177,7 @@ const Goals = () => {
               {/* Progress Bar */}
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-600">Progress</span>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Progress</span>
                   <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{progress.percentage.toFixed(0)}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
@@ -191,11 +191,11 @@ const Goals = () => {
               {/* Amount Details */}
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Budget:</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Budget:</span>
                   <span className="font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(goal.amount)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Spent:</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Spent:</span>
                   <span className={`font-semibold ${progress.isOverBudget ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'}`}>
                     {formatCurrency(progress.spent)}
                   </span>
@@ -260,42 +260,42 @@ const Goals = () => {
       {showAddGoal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md animate-slide-up">
-            <div className="p-6 border-b border-gray-100">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700">
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Add New Goal</h3>
             </div>
             
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Goal Title</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Goal Title</label>
                 <input
                   type="text"
                   value={newGoal.title}
                   onChange={(e) => setNewGoal(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="e.g., Monthly Food Budget"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Budget Amount (₹)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Budget Amount (₹)</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-semibold">₹</span>
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 font-semibold">₹</span>
                   <input
                     type="number"
                     value={newGoal.amount}
                     onChange={(e) => setNewGoal(prev => ({ ...prev, amount: e.target.value }))}
                     placeholder="5000"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
                 <select
                   value={newGoal.category}
                   onChange={(e) => setNewGoal(prev => ({ ...prev, category: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 >
                   <option value="all">All Categories</option>
                   <option value="Food & Dining">Food & Dining</option>
@@ -312,11 +312,11 @@ const Goals = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Time Period</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time Period</label>
                 <select
                   value={newGoal.type}
                   onChange={(e) => setNewGoal(prev => ({ ...prev, type: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 >
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
@@ -325,10 +325,10 @@ const Goals = () => {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-100 flex gap-3">
+            <div className="p-6 border-t border-gray-100 dark:border-gray-700 flex gap-3">
               <button
                 onClick={() => setShowAddGoal(false)}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-medium transition-all duration-300"
+                className="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 py-3 px-4 rounded-xl font-medium transition-all duration-300"
               >
                 Cancel
               </button>

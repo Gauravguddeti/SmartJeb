@@ -109,13 +109,10 @@ export const GoalsProvider = ({ children }) => {
         // Load from Supabase for authenticated users
         loadGoalsFromSupabase();
       } else {
-        // Load from localStorage for guests or when Supabase not configured
+        // Load from storage for guests or when Supabase not configured
         try {
-          const savedGoals = localStorage.getItem('smartjeb-goals');
-          if (savedGoals) {
-            const goalsData = JSON.parse(savedGoals);
-            setGoals(goalsData);
-          }
+          const goalsData = loadFromStorage();
+          setGoals(goalsData);
         } catch (error) {
           console.error('Error loading goals:', error);
           toast.error('Failed to load goals');
@@ -126,13 +123,37 @@ export const GoalsProvider = ({ children }) => {
     loadGoals();
   }, [user, isGuest]);
 
-  // Helper function to save goals to localStorage
+  // Helper function to save goals to storage
   const saveToStorage = (goalsData) => {
     try {
-      localStorage.setItem('smartjeb-goals', JSON.stringify(goalsData));
+      if (isGuest) {
+        // Use sessionStorage for guest mode - data won't persist after browser close
+        sessionStorage.setItem('smartjeb-guest-goals', JSON.stringify(goalsData));
+      } else {
+        // Use localStorage for persistence when not authenticated but not in guest mode
+        localStorage.setItem('smartjeb-goals', JSON.stringify(goalsData));
+      }
     } catch (error) {
-      console.error('Error saving goals to localStorage:', error);
+      console.error('Error saving goals to storage:', error);
       toast.error('Failed to save goals');
+    }
+  };
+
+  // Helper function to load goals from storage
+  const loadFromStorage = () => {
+    try {
+      if (isGuest) {
+        // Load from sessionStorage for guest mode
+        const savedGoals = sessionStorage.getItem('smartjeb-guest-goals');
+        return savedGoals ? JSON.parse(savedGoals) : [];
+      } else {
+        // Load from localStorage for regular users
+        const savedGoals = localStorage.getItem('smartjeb-goals');
+        return savedGoals ? JSON.parse(savedGoals) : [];
+      }
+    } catch (error) {
+      console.error('Error loading goals from storage:', error);
+      return [];
     }
   };
 

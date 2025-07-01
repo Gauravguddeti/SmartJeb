@@ -16,6 +16,8 @@ import Welcome from './components/Welcome';
 import AIChatbot from './components/AIChatbot';
 import LandingPage from './components/LandingPage';
 import AuthModal from './components/AuthModal';
+import GuestMigrationBanner from './components/GuestMigrationBanner';
+import EmailVerificationBanner from './components/EmailVerificationBanner';
 
 /**
  * Main App Component
@@ -28,6 +30,11 @@ const AppContent = () => {
   const [showLanding, setShowLanding] = useState(true);
   const [showAuth, setShowAuth] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+
+  // Debug logging for showAuth state
+  useEffect(() => {
+    console.log('showAuth state changed:', showAuth);
+  }, [showAuth]);
 
   // Initialize dark mode and handle auth state changes
   useEffect(() => {
@@ -108,10 +115,18 @@ const AppContent = () => {
 
   const handleGetStarted = () => {
     // This is for "Get Started" button - show auth modal
+    console.log('handleGetStarted called, setting showAuth to true');
+    console.log('Current showAuth state:', showAuth);
     setShowAuth(true);
+    console.log('showAuth should now be true');
+    // Force a re-render to check if state is actually updated
+    setTimeout(() => {
+      console.log('showAuth state after timeout:', showAuth);
+    }, 100);
   };
 
   const handleShowAuth = () => {
+    console.log('handleShowAuth called, setting showAuth to true');
     setShowAuth(true);
   };
 
@@ -248,18 +263,24 @@ const AppContent = () => {
             }}
           />
 
+          {/* Guest Migration Banner */}
+          <GuestMigrationBanner onShowAuth={handleShowAuth} />
+          
+          {/* Email Verification Banner */}
+          <EmailVerificationBanner />
+
           {/* Header */}
           <Header 
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             onAddExpense={() => setShowExpenseForm(true)}
             onShowAuth={handleShowAuth}
-            isGuest={!isAuthenticated}
+            isGuest={isGuest}
           />
 
           {/* Main content */}
-          <main className="container mx-auto px-4 py-6 pb-20 md:pb-6 flex-grow">
-            <div className="animate-slide-up">
+          <main className="container mx-auto px-4 py-6 pb-24 md:pb-6 flex-grow overflow-x-hidden">
+            <div className="animate-slide-up max-w-full">
               {renderActiveComponent()}
             </div>
           </main>
@@ -329,6 +350,14 @@ const AppContent = () => {
 
           {/* AI Chatbot */}
           <AIChatbot />
+
+          {/* Auth Modal - Always available in main app */}
+          <AuthModal 
+            isOpen={showAuth}
+            onClose={handleCloseAuth}
+            onGuestLogin={handleGuestLogin}
+            onSuccess={handleAuthSuccess}
+          />
         </div>
       </GoalsProvider>
     </ExpenseProvider>

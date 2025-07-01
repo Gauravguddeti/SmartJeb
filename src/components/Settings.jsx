@@ -92,13 +92,28 @@ const Settings = ({ darkMode, toggleDarkMode }) => {
   };
 
   const handleClearData = () => {
-    if (window.confirm('Are you sure you want to delete all your data? This action cannot be undone.')) {
+    const confirmMessage = `⚠️ DANGER: This will permanently delete ALL your data!
+
+This includes:
+• All ${totalExpenses} expenses
+• All ${totalGoals} goals
+• All settings and preferences
+
+This action CANNOT be undone!
+
+Type "DELETE" to confirm:`;
+    
+    const userInput = prompt(confirmMessage);
+    
+    if (userInput === 'DELETE') {
       if (clearAllData) {
         clearAllData();
-        toast.success('All data has been cleared.');
+        toast.success('All data has been permanently deleted.');
       } else {
         toast.error('Clear data feature not available');
       }
+    } else if (userInput !== null) {
+      toast.error('Delete operation cancelled - incorrect confirmation text');
     }
   };
 
@@ -120,12 +135,17 @@ const Settings = ({ darkMode, toggleDarkMode }) => {
     </div>
   );
 
-  const SettingsItem = ({ icon: Icon, title, description, action, rightElement }) => (
-    <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-200">
+  const SettingsItem = ({ icon: Icon, title, description, action, rightElement, isClickable = true }) => (
+    <div 
+      className={`flex items-center space-x-3 p-2 rounded-lg transition-colors duration-200 ${
+        isClickable ? 'hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer' : ''
+      }`}
+      onClick={isClickable ? action : undefined}
+    >
       <div className="flex-shrink-0">
         <Icon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
       </div>
-      <div className="flex-1 min-w-0" onClick={action}>
+      <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 dark:text-white">
           {title}
         </p>
@@ -198,6 +218,7 @@ const Settings = ({ darkMode, toggleDarkMode }) => {
           description="Toggle between light and dark themes"
           action={toggleDarkMode}
           rightElement={<Toggle checked={darkMode} onChange={toggleDarkMode} />}
+          isClickable={false}
         />
       </SettingsSection>
 
@@ -209,6 +230,7 @@ const Settings = ({ darkMode, toggleDarkMode }) => {
           description="Get notified about your spending goals"
           action={handleNotificationToggle}
           rightElement={<Toggle checked={notifications} onChange={handleNotificationToggle} />}
+          isClickable={false}
         />
       </SettingsSection>
 
@@ -255,37 +277,53 @@ const Settings = ({ darkMode, toggleDarkMode }) => {
           description="Automatically backup data to local storage"
           action={handleDataBackupToggle}
           rightElement={<Toggle checked={dataBackup} onChange={handleDataBackupToggle} />}
+          isClickable={false}
         />
       </SettingsSection>
 
       {/* Danger Zone */}
-      <SettingsSection title="Danger Zone">
-        <SettingsItem
-          icon={Trash2}
-          title="Clear All Data"
-          description="Permanently delete all expenses and goals"
-          action={handleClearData}
-          rightElement={
-            <span className="text-red-600 dark:text-red-400 text-sm font-medium">
-              Delete
-            </span>
-          }
-        />
-        
-        {user?.email && (
-          <SettingsItem
-            icon={LogOut}
-            title="Sign Out"
-            description="Sign out of your account"
-            action={handleSignOut}
-            rightElement={
-              <span className="text-orange-600 dark:text-orange-400 text-sm font-medium">
-                Sign Out
+      <div className="bg-red-50 dark:bg-red-900/20 rounded-lg shadow-sm border border-red-200 dark:border-red-800 mb-4">
+        <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 p-4 border-b border-red-200 dark:border-red-800">
+          ⚠️ Danger Zone
+        </h3>
+        <div className="p-4 space-y-4">
+          <div 
+            className="flex items-center space-x-3 p-3 rounded-lg border-2 border-red-200 dark:border-red-700 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 cursor-pointer transition-all duration-200"
+            onClick={handleClearData}
+          >
+            <div className="flex-shrink-0">
+              <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                Clear All Data
+              </p>
+              <p className="text-sm text-red-600 dark:text-red-400">
+                Permanently delete all {totalExpenses} expenses and {totalGoals} goals
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <span className="text-red-700 dark:text-red-300 text-sm font-bold px-3 py-1 bg-red-200 dark:bg-red-800 rounded-full">
+                DELETE
               </span>
-            }
-          />
-        )}
-      </SettingsSection>
+            </div>
+          </div>
+          
+          {user?.email && (
+            <SettingsItem
+              icon={LogOut}
+              title="Sign Out"
+              description="Sign out of your account"
+              action={handleSignOut}
+              rightElement={
+                <span className="text-orange-600 dark:text-orange-400 text-sm font-medium">
+                  Sign Out
+                </span>
+              }
+            />
+          )}
+        </div>
+      </div>
 
       {/* App Info */}
       <div className="text-center text-sm text-gray-500 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-gray-700">

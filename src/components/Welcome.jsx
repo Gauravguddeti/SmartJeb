@@ -17,13 +17,15 @@ const Welcome = ({ onComplete, isGuest = false }) => {
   // Check if user should see welcome screen
   useEffect(() => {
     const hasSeenWelcome = localStorage.getItem('smartjeb-welcome-seen');
-    const hasExpenses = expenses.length > 0;
     
-    if (hasSeenWelcome || hasExpenses) {
+    // Always show welcome to new users (those who haven't seen it before)
+    if (!hasSeenWelcome) {
+      setIsVisible(true);
+    } else {
       setIsVisible(false);
       onComplete?.();
     }
-  }, [expenses.length, onComplete]);
+  }, [onComplete]);
 
   const steps = [
     {
@@ -129,7 +131,15 @@ const Welcome = ({ onComplete, isGuest = false }) => {
     onComplete?.();
   };
 
-  if (!isVisible) return null;
+  if (!isVisible) {
+    return showProfileModal ? (
+      <UserProfileModal
+        isOpen={showProfileModal}
+        onClose={handleProfileComplete}
+        isFirstTime={true}
+      />
+    ) : null;
+  }
 
   const currentStepData = steps[currentStep];
   const Icon = currentStepData.icon;
@@ -152,127 +162,124 @@ const Welcome = ({ onComplete, isGuest = false }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-scale-in">
-        {/* Header */}
-        <div className={`bg-gradient-to-r ${getColorClasses(currentStepData.color)} p-6 text-center relative overflow-hidden`}>
-          <div className="absolute inset-0 bg-black/10"></div>
-          <div className="relative z-10">
-            <div className="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
-              <Icon className="w-8 h-8" />
-            </div>
-            <h1 className="text-2xl font-bold mb-2">{currentStepData.title}</h1>
-            <p className="text-lg opacity-90">{currentStepData.subtitle}</p>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          <p className="text-gray-600 text-center text-lg leading-relaxed">
-            {currentStepData.description}
-          </p>
-
-          {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {currentStepData.features.map((feature, index) => (
-              <div
-                key={index}
-                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-300"
-              >
-                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                <span className="text-gray-700">{feature}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Progress */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>Step {currentStep + 1} of {steps.length}</span>
-              <span>{Math.round(((currentStep + 1) / steps.length) * 100)}% Complete</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className={`bg-gradient-to-r ${getColorClasses(currentStepData.color)} h-2 rounded-full transition-all duration-500`}
-                style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-
-          {/* Dots indicator */}
-          <div className="flex justify-center space-x-2">
-            {steps.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentStep(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentStep
-                    ? `bg-gradient-to-r ${getColorClasses(currentStepData.color)}`
-                    : 'bg-gray-300 hover:bg-gray-400'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 bg-gray-50 flex items-center justify-between">
-          <button
-            onClick={handleSkip}
-            className="text-gray-500 hover:text-gray-700 font-medium transition-colors duration-300"
-          >
-            Skip Tour
-          </button>
-          
-          <div className="flex items-center space-x-3">
-            {currentStep > 0 && (
-              <button
-                onClick={() => setCurrentStep(currentStep - 1)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors duration-300"
-              >
-                Back
-              </button>
-            )}
-            <button
-              onClick={handleNext}
-              className={`flex items-center space-x-2 px-6 py-3 bg-gradient-to-r ${getColorClasses(currentStepData.color)} rounded-xl font-semibold transition-all duration-300 hover:shadow-lg transform hover:scale-105 active:scale-95`}
-            >
-              <span>{currentStep === steps.length - 1 ? 'Get Started' : 'Next'}</span>
-              {currentStep === steps.length - 1 ? (
-                <Star className="w-4 h-4" />
-              ) : (
-                <ArrowRight className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Celebration confetti for last step */}
-        {currentStep === steps.length - 1 && (
-          <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-            {[...Array(20)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute animate-ping"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 2}s`,
-                  animationDuration: `${1 + Math.random()}s`
-                }}
-              >
-                <Gift className="w-4 h-4 text-yellow-500" />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
-  return (
     <>
-      {isVisible && welcomeContent}
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 animate-fade-in">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden animate-scale-in">
+          {/* Header */}
+          <div className={`bg-gradient-to-r ${getColorClasses(currentStepData.color)} p-4 sm:p-6 text-center relative overflow-hidden`}>
+            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="relative z-10">
+              <div className="bg-white/20 rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center mx-auto mb-3 sm:mb-4 animate-bounce-gentle">
+                <Icon className="w-6 h-6 sm:w-8 sm:h-8" />
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold mb-2">{currentStepData.title}</h1>
+              <p className="text-sm sm:text-lg opacity-90">{currentStepData.subtitle}</p>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto max-h-[60vh] sm:max-h-none">
+            <p className="text-gray-600 dark:text-gray-300 text-center text-sm sm:text-lg leading-relaxed">
+              {currentStepData.description}
+            </p>
+
+            {/* Features */}
+            <div className="grid grid-cols-1 gap-2 sm:gap-3">
+              {currentStepData.features.map((feature, index) => (
+                <div
+                  key={index}
+                  className="flex items-center space-x-3 p-2 sm:p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300"
+                >
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Progress */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                <span>Step {currentStep + 1} of {steps.length}</span>
+                <span>{Math.round(((currentStep + 1) / steps.length) * 100)}% Complete</span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                <div
+                  className={`bg-gradient-to-r ${getColorClasses(currentStepData.color)} h-2 rounded-full transition-all duration-500`}
+                  style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Dots indicator */}
+            <div className="flex justify-center space-x-2">
+              {steps.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentStep(index)}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index === currentStep
+                      ? `bg-gradient-to-r ${getColorClasses(currentStepData.color)}`
+                      : 'bg-gray-300 hover:bg-gray-400'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="p-3 sm:p-6 bg-gray-50 dark:bg-gray-700/50 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
+            <button
+              onClick={handleSkip}
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors duration-300 text-sm sm:text-base order-2 sm:order-1"
+            >
+              Skip Tour
+            </button>
+            
+            <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-center sm:justify-end order-1 sm:order-2">
+              {currentStep > 0 && (
+                <button
+                  onClick={() => setCurrentStep(currentStep - 1)}
+                  className="px-3 py-2 sm:px-4 sm:py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 font-medium transition-colors duration-300 text-sm sm:text-base"
+                >
+                  Back
+                </button>
+              )}
+              <button
+                onClick={handleNext}
+                className={`flex items-center space-x-2 px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r ${getColorClasses(currentStepData.color)} rounded-xl font-semibold transition-all duration-300 hover:shadow-lg transform hover:scale-105 active:scale-95 text-sm sm:text-base`}
+              >
+                <span>{currentStep === steps.length - 1 ? 'Get Started' : 'Next'}</span>
+                {currentStep === steps.length - 1 ? (
+                  <Star className="w-3 h-3 sm:w-4 sm:h-4" />
+                ) : (
+                  <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Celebration confetti for last step */}
+          {currentStep === steps.length - 1 && (
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+              {[...Array(20)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute animate-ping"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                    animationDelay: `${Math.random() * 2}s`,
+                    animationDuration: `${1 + Math.random()}s`
+                  }}
+                >
+                  <Gift className="w-4 h-4 text-yellow-500" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      
       {showProfileModal && (
         <UserProfileModal
           isOpen={showProfileModal}

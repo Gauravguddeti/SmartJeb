@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowRight, Mail, Linkedin, Github, Instagram, Menu, X, Star, CheckCircle, TrendingUp, Shield, Zap, BarChart3 } from 'lucide-react';
+import { ArrowRight, Mail, Linkedin, Github, Instagram, Menu, X, Star, CheckCircle, TrendingUp, Shield, Zap, BarChart3, Send } from 'lucide-react';
+import { sendEmailViaFormSubmit, isValidEmail } from '../services/emailService';
 
 const LandingPage = ({ onEnterApp, onTryApp, onGetStarted, onShowAuth, user, isAuthenticated }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -98,22 +99,47 @@ const LandingPage = ({ onEnterApp, onTryApp, onGetStarted, onShowAuth, user, isA
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!reviewForm.email || !reviewForm.review) {
+      alert('Please fill in both email and review fields.');
+      return;
+    }
+
+    if (!isValidEmail(reviewForm.email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      // Create mailto link with review content
-      const subject = encodeURIComponent('SmartJeb Review');
-      const body = encodeURIComponent(`Review from: ${reviewForm.email}\n\nReview:\n${reviewForm.review}`);
-      const mailtoLink = `mailto:guddetigaurav1@gmail.com?subject=${subject}&body=${body}`;
+      // Use a more reliable form submission method
+      const formData = new FormData();
+      formData.append('_to', 'guddetigaurav1@gmail.com');
+      formData.append('_subject', 'SmartJeb Review');
+      formData.append('_captcha', 'false');
+      formData.append('_template', 'basic');
+      formData.append('_autoresponse', 'Thank you for your review! We appreciate your feedback.');
+      formData.append('email', reviewForm.email);
+      formData.append('review', reviewForm.review);
+      formData.append('_next', window.location.href);
+
+      const response = await fetch('https://formsubmit.co/ajax/guddetigaurav1@gmail.com', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
       
-      // Open email client
-      window.location.href = mailtoLink;
-      
-      // Reset form
-      setReviewForm({ email: '', review: '' });
-      alert('Thank you! Your email client should open with the review. Please send it to complete the submission.');
+      if (response.ok && result.success) {
+        setReviewForm({ email: '', review: '' });
+        alert('Thank you! Your review has been sent successfully. 🎉');
+      } else {
+        throw new Error('Failed to send review');
+      }
     } catch (error) {
-      alert('Error opening email client. Please email your review directly to guddetigaurav1@gmail.com');
+      console.error('Review submission error:', error);
+      alert('There was an error sending your review. Please try again or contact us directly at guddetigaurav1@gmail.com');
     } finally {
       setIsSubmitting(false);
     }
@@ -205,7 +231,10 @@ const LandingPage = ({ onEnterApp, onTryApp, onGetStarted, onShowAuth, user, isA
                 // Non-authenticated user buttons
                 <>
                   <button 
-                    onClick={onGetStarted}
+                    onClick={() => {
+                      console.log('Get Started button clicked');
+                      onGetStarted();
+                    }}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 flex items-center justify-center"
                   >
                     Get Started — It's Free! <ArrowRight className="ml-2" size={20} />
@@ -255,8 +284,8 @@ const LandingPage = ({ onEnterApp, onTryApp, onGetStarted, onShowAuth, user, isA
                   <Shield className="text-blue-400" size={24} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold mb-2">Privacy First</h3>
-                  <p className="text-slate-300">Your data stays on your device. No cloud storage, no data mining, no worries.</p>
+                  <h3 className="text-xl font-semibold mb-2">Secure & Reliable</h3>
+                  <p className="text-slate-300">Bank-level security and cloud backup to keep your data safe and accessible.</p>
                 </div>
               </div>
               
@@ -283,12 +312,12 @@ const LandingPage = ({ onEnterApp, onTryApp, onGetStarted, onShowAuth, user, isA
             
             <div className="text-center">
               <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl p-8 border border-slate-700/50">
-                <div className="text-4xl font-bold mb-2">10,000+</div>
-                <div className="text-slate-300 mb-4">Expenses Tracked</div>
-                <div className="text-4xl font-bold mb-2">500+</div>
-                <div className="text-slate-300 mb-4">Happy Users</div>
-                <div className="text-4xl font-bold mb-2">0</div>
-                <div className="text-slate-300">Dollars Charged</div>
+                <div className="text-4xl font-bold mb-2">🎯</div>
+                <div className="text-slate-300 mb-4">Smart Categorization</div>
+                <div className="text-4xl font-bold mb-2">📊</div>
+                <div className="text-slate-300 mb-4">Visual Analytics</div>
+                <div className="text-4xl font-bold mb-2">∞</div>
+                <div className="text-slate-300">Free Forever</div>
               </div>
             </div>
           </div>
@@ -486,10 +515,19 @@ const LandingPage = ({ onEnterApp, onTryApp, onGetStarted, onShowAuth, user, isA
               <button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 flex items-center justify-center"
+                className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 flex items-center justify-center"
               >
-                <Mail className="mr-2" size={20} />
-                {isSubmitting ? 'Opening Email...' : 'Send Review'}
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2" size={20} />
+                    Send Review
+                  </>
+                )}
               </button>
             </form>
           </div>

@@ -94,22 +94,13 @@ const Header = ({ activeTab, setActiveTab, onAddExpense, onShowAuth }) => {
                 </button>
               </div>
             )}
-            
-            {/* Add Expense Button */}
-            <button
-              onClick={onAddExpense}
-              className="flex items-center space-x-2 px-4 py-2 ml-2 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="text-sm font-medium">Add Expense</span>
-            </button>
 
             {/* User Profile / Sign Out */}
             <div className="flex items-center space-x-3 ml-4">
               {user && !isGuest && (
                 <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
                   <User className="w-4 h-4" />
-                  <span>{user.email}</span>
+                  <span>{user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User'}</span>
                 </div>
               )}
               

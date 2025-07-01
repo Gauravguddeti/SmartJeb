@@ -4,14 +4,56 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile-first responsive design and anti-zoom styles */
 @layer base {
-  * {
-    @apply border-gray-200;
+  html {
+    font-size: 16px; /* Base font size */
+    -webkit-text-size-adjust: 100%; /* Prevent iOS text size adjustment */
+    -ms-text-size-adjust: 100%; /* Prevent Windows Mobile text size adjustment */
+    width: 100%;
+    height: 100%;
   }
-  
+
   body {
     @apply bg-gradient-to-br from-blue-50 via-white to-indigo-50 text-gray-900 font-sans antialiased;
     font-family: 'Inter', system-ui, sans-serif;
+    /* Prevent zoom on iOS */
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    zoom: 1; /* Force 100% zoom */
+    transform: scale(1); /* Ensure no scaling */
+  }
+
+  /* Prevent zoom on input focus (iOS) */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important; /* Prevent zoom on iOS when font-size < 16px */
+  }
+
+  /* Make sure containers don't overflow */
+  * {
+    @apply border-gray-200;
+    box-sizing: border-box;
+  }
+
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh; /* Use dynamic viewport height for mobile */
+    width: 100vw;
+    max-width: 100vw;
+    overflow-x: hidden;
+    zoom: 1; /* Force 100% zoom */
+    transform: scale(1); /* Ensure no scaling */
   }
 
   /* Dark mode styles */
@@ -205,5 +247,39 @@
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Modal and overlay styles */
+  .modal-open {
+    overflow: hidden !important;
+  }
+
+  /* Animation classes */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
   }
 }

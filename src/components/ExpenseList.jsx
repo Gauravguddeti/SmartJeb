@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { useExpenses } from '../context/ExpenseContext';
 import { EXPENSE_CATEGORIES } from '../services/database';
 import { formatCurrency, getRelativeDateString } from '../utils/formatters';
+import { getReceiptDisplayUrl } from '../services/storageService';
 import ExpenseForm from './ExpenseForm';
 
 /**
@@ -25,7 +26,7 @@ const ExpenseList = ({ onAddExpense }) => {
     loading, 
     filter, 
     updateFilters, 
-    removeExpense 
+    deleteExpense 
   } = useExpenses();
 
   const [editingExpense, setEditingExpense] = useState(null);
@@ -33,7 +34,7 @@ const ExpenseList = ({ onAddExpense }) => {
 
   const handleDeleteExpense = async (id) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
-      await removeExpense(id);
+      await deleteExpense(id);
     }
   };
 
@@ -90,7 +91,7 @@ const ExpenseList = ({ onAddExpense }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Search */}
             <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Search
               </label>
               <div className="relative">
@@ -107,13 +108,13 @@ const ExpenseList = ({ onAddExpense }) => {
 
             {/* Category Filter */}
             <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Category
               </label>
               <select
                 value={filter.category}
                 onChange={(e) => updateFilters({ category: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 bg-white/50 backdrop-blur-sm"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100"
               >
                 <option value="all">All Categories</option>
                 {EXPENSE_CATEGORIES.map(category => (
@@ -126,13 +127,13 @@ const ExpenseList = ({ onAddExpense }) => {
 
             {/* Date Range */}
             <div className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Date Range
               </label>
               <select
                 value={filter.dateRange}
                 onChange={(e) => updateFilters({ dateRange: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 bg-white/50 backdrop-blur-sm"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100"
               >
                 <option value="all">All Time</option>
                 <option value="today">Today</option>
@@ -202,28 +203,80 @@ const ExpenseList = ({ onAddExpense }) => {
                     <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3 mb-3 border-l-4 border-primary-200">{expense.note}</p>
                   )}
 
-                  {expense.receipt && (
-                    <div className="flex items-center gap-2 text-sm text-gray-500 bg-green-50 rounded-lg p-2 inline-flex">
-                      <Camera className="w-4 h-4 text-green-600" />
-                      <span className="font-medium text-green-700">Receipt attached</span>
+                  {(expense.receiptUrl || expense.receipt) && (
+                    <div className="mt-3">
+                      <div className="flex items-center gap-2 text-sm text-gray-500 bg-green-50 dark:bg-green-900/20 rounded-lg p-2 mb-2">
+                        <Camera className="w-4 h-4 text-green-600" />
+                        <span className="font-medium text-green-700 dark:text-green-400">Receipt attached</span>
+                      </div>
+                      <div className="relative group">
+                        {(() => {
+                          const receiptUrl = getReceiptDisplayUrl(expense.receiptUrl || expense.receipt);
+                          console.log('Receipt URL for expense', expense.id, ':', receiptUrl);
+                          return receiptUrl ? (
+                            <img 
+                              src={receiptUrl} 
+                              alt="Receipt"
+                              className="w-full max-w-sm h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
+                              onClick={() => {
+                                // Create a modal to view the image
+                                const modal = document.createElement('div');
+                                modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
+                                modal.onclick = () => document.body.removeChild(modal);
+                                
+                                const img = document.createElement('img');
+                                img.src = receiptUrl;
+                                img.className = 'max-w-full max-h-full object-contain rounded-lg';
+                                img.onclick = (e) => e.stopPropagation();
+                                
+                                const closeBtn = document.createElement('button');
+                                closeBtn.innerHTML = '×';
+                                closeBtn.className = 'absolute top-4 right-4 text-white text-3xl font-bold bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70';
+                                closeBtn.onclick = () => document.body.removeChild(modal);
+                                
+                                modal.appendChild(img);
+                                modal.appendChild(closeBtn);
+                                document.body.appendChild(modal);
+                              }}
+                              onError={(e) => {
+                                console.error('Failed to load receipt image:', receiptUrl);
+                                e.target.style.display = 'none';
+                                const errorDiv = document.createElement('div');
+                                errorDiv.className = 'w-full max-w-sm h-32 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-500';
+                                errorDiv.innerHTML = '<span class="text-sm">Image not available</span>';
+                                e.target.parentNode.appendChild(errorDiv);
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full max-w-sm h-32 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-500">
+                              <span className="text-sm">Receipt URL not found</span>
+                            </div>
+                          );
+                        })()}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-all duration-200 flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 transition-opacity">
+                            Click to view full size
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
+              </div>
 
-                <div className="flex items-center gap-2 ml-6">
-                  <button
-                    onClick={() => setEditingExpense(expense)}
-                    className="p-3 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-300 hover:scale-110 active:scale-95 group"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteExpense(expense.id)}
-                    className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 hover:scale-110 active:scale-95 group"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+              <div className="flex items-center gap-2 mt-4">
+                <button
+                  onClick={() => setEditingExpense(expense)}
+                  className="p-3 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-300 hover:scale-110 active:scale-95 group"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDeleteExpense(expense.id)}
+                  className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 hover:scale-110 active:scale-95 group"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
           ))

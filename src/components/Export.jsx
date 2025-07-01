@@ -8,7 +8,7 @@ import { format } from 'date-fns';
  * Export Component - Export and share expense data
  */
 const Export = () => {
-  const { expenses } = useExpenses();
+  const { expenses, addExpense } = useExpenses();
   const [exportType, setExportType] = useState('csv');
   const [dateRange, setDateRange] = useState('all');
   const [isExporting, setIsExporting] = useState(false);
@@ -119,33 +119,136 @@ const Export = () => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const content = e.target.result;
         
         if (file.type === 'application/json' || file.name.endsWith('.json')) {
           const data = JSON.parse(content);
-          console.log('Imported data:', data);
-          // Here you would integrate with your expense context to import data
+          await importExpensesData(data);
         } else if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
-          // Basic CSV parsing
-          const lines = content.split('\\n');
-          const headers = lines[0].split(',');
-          const data = lines.slice(1).map(line => {
-            const values = line.split(',');
-            return headers.reduce((obj, header, index) => {
-              obj[header.toLowerCase()] = values[index];
-              return obj;
-            }, {});
-          });
-          console.log('Imported CSV data:', data);
+          // Enhanced CSV parsing - handle different line endings
+          const lines = content.split(/\r?\n/).filter(line => line.trim());
+          console.log('Total lines found:', lines.length, 'Content preview:', content.substring(0, 200));
+          
+          if (lines.length < 2) {
+            console.error('CSV parsing failed. Lines:', lines);
+            alert(`CSV file appears empty or invalid. Found ${lines.length} lines. Please check the file format.`);
+            return;
+          }
+          
+          const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+          console.log('CSV Headers:', headers);
+          console.log('Sample data line:', lines[1]);
+          
+          const expenses = [];
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+            
+            console.log(`Processing line ${i}:`, line);
+            
+            // Enhanced CSV parsing using regex for better quoted field handling
+            const csvRegex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+            const values = line.split(csvRegex).map(value => {
+              // Remove surrounding quotes and unescape internal quotes
+              return value.trim().replace(/^"(.*)"$/, '$1').replace(/""/g, '"');
+            });
+            
+            console.log(`Parsed values for line ${i}:`, values);
+            
+            if (values.length < headers.length) {
+              console.warn(`Line ${i + 1} has ${values.length} values but expected ${headers.length}`);
+              continue;
+            }
+            
+            // Map CSV data to expense format
+            const expense = {};
+            headers.forEach((header, index) => {
+              const value = values[index] || '';
+              
+              switch (header.toLowerCase().trim()) {
+                case 'date':
+                  expense.date = value;
+                  break;
+                case 'description':
+                  expense.description = value;
+                  break;
+                case 'category':
+                  expense.category = value;
+                  break;
+                case 'amount (₹)':
+                case 'amount':
+                  expense.amount = parseFloat(value.replace(/[₹,]/g, '')) || 0;
+                  break;
+                case 'note':
+                case 'notes':
+                  expense.note = value;
+                  break;
+                default:
+                  expense[header.toLowerCase().replace(/[^a-z0-9]/g, '_')] = value;
+              }
+            });
+            
+            // Validate required fields
+            if (expense.description && expense.amount > 0 && expense.date && expense.category) {
+              expenses.push({
+                id: `imported-${Date.now()}-${i}`,
+                description: expense.description,
+                amount: expense.amount,
+                category: expense.category,
+                date: expense.date,
+                note: expense.note || '',
+                paymentMethod: 'cash',
+                createdAt: new Date().toISOString()
+              });
+            } else {
+              console.warn(`Skipping invalid expense on line ${i + 1}:`, expense);
+            }
+          }
+          
+          console.log(`Parsed ${expenses.length} valid expenses from CSV`);
+          
+          if (expenses.length > 0) {
+            await importExpensesData(expenses);
+          } else {
+            alert('No valid expenses found in CSV file. Please check the format and required fields (Date, Description, Category, Amount).');
+          }
         }
       } catch (error) {
         console.error('Import failed:', error);
+        alert('Failed to import file. Please check the format and try again.');
       }
+      
+      // Clear the file input so the same file can be imported again
+      event.target.value = '';
     };
     
     reader.readAsText(file);
+  };
+
+  const importExpensesData = async (expensesData) => {
+    try {
+      let importedCount = 0;
+      
+      for (const expenseData of expensesData) {
+        try {
+          await addExpense(expenseData);
+          importedCount++;
+        } catch (error) {
+          console.error('Error importing expense:', error);
+        }
+      }
+      
+      if (importedCount > 0) {
+        alert(`Successfully imported ${importedCount} expenses!`);
+      } else {
+        alert('No expenses were imported. Please check the file format.');
+      }
+    } catch (error) {
+      console.error('Import process failed:', error);
+      alert('Import failed. Please try again.');
+    }
   };
 
   const generateShareableLink = () => {

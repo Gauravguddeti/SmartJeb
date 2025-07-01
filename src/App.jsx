@@ -71,13 +71,28 @@ const AppContent = () => {
     }
   }, [loading, isAuthenticated, isGuest]);
 
-  // Add refresh warning for guest mode
+  // Add refresh warning for guest mode - only when guest has data and isn't migrating
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-      if (isGuest) {
-        e.preventDefault();
-        e.returnValue = 'You are in guest mode. Your data will be lost if you refresh or close this page. Consider signing up to save your data permanently.';
-        return e.returnValue;
+      // Only show warning if:
+      // 1. User is in guest mode
+      // 2. There's guest data to lose
+      // 3. Migration is not currently in progress
+      const isMigrating = sessionStorage.getItem('smartjeb-migration-in-progress');
+      const hasGuestData = sessionStorage.getItem('smartjeb-guest-expenses');
+      
+      if (isGuest && hasGuestData && !isMigrating) {
+        try {
+          const guestExpenses = JSON.parse(hasGuestData);
+          if (guestExpenses && guestExpenses.length > 0) {
+            e.preventDefault();
+            e.returnValue = 'You are in guest mode. Your data will be lost if you refresh or close this page. Consider signing up to save your data permanently.';
+            return e.returnValue;
+          }
+        } catch (error) {
+          // If parsing fails, don't show warning
+          console.log('Error checking guest data:', error);
+        }
       }
     };
 
@@ -249,17 +264,23 @@ const AppContent = () => {
                 color: '#fff',
                 borderRadius: '12px',
                 boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                zIndex: 99999, // Ensure toasts appear above modals
               },
               success: {
                 style: {
                   background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                  zIndex: 99999,
                 },
               },
               error: {
                 style: {
                   background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  zIndex: 99999,
                 },
               },
+            }}
+            containerStyle={{
+              zIndex: 99999, // Container z-index
             }}
           />
 

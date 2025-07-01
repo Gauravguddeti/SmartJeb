@@ -362,8 +362,9 @@ export const ExpenseProvider = ({ children }) => {
         toast.success(`Successfully migrated ${guestExpenses.length} expenses from guest mode!`);
       }
 
-      // Clean up migration data
+      // Clean up migration data and flags
       localStorage.removeItem('smartjeb-guest-migration-data');
+      sessionStorage.removeItem('smartjeb-migration-in-progress');
       console.log(`Migration completed for ${guestExpenses.length} expenses`);
       
     } catch (error) {
@@ -379,22 +380,24 @@ export const ExpenseProvider = ({ children }) => {
     try {
       // Check if there's a migration in progress flag
       const migrationInProgress = sessionStorage.getItem('smartjeb-migration-in-progress');
+      const migrationData = localStorage.getItem('smartjeb-guest-migration-data');
       
-      if (!migrationInProgress) {
-        // No migration in progress, clear any guest data
+      if (!migrationInProgress && !migrationData) {
+        // No migration in progress and no migration data, safe to clear
         localStorage.removeItem('smartjeb-guest-migration-data');
         localStorage.removeItem('smartjeb-guest-backup');
         
-        // If we're not in guest mode, also clear guest expenses
-        if (!isGuest) {
+        // If we're authenticated (not in guest mode), clear guest session data
+        if (!isGuest && user) {
           sessionStorage.removeItem('smartjeb-guest-expenses');
           sessionStorage.removeItem('smartjeb-guest-goals');
-          console.log('Cleared guest data - not in guest mode and no migration in progress');
+          console.log('Cleared guest session data - user is authenticated');
         }
       } else {
-        // Clear the migration progress flag after checking
-        sessionStorage.removeItem('smartjeb-migration-in-progress');
-        console.log('Migration in progress detected, preserving guest data');
+        console.log('Preserving guest data - migration may be in progress', { 
+          migrationInProgress: !!migrationInProgress, 
+          migrationData: !!migrationData 
+        });
       }
     } catch (error) {
       console.error('Error clearing guest data:', error);

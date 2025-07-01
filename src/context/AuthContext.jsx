@@ -142,9 +142,6 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      // Clear any existing Google session data before starting new OAuth flow
-      await clearGoogleSession();
-      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -160,55 +157,6 @@ export const AuthProvider = ({ children }) => {
       return { error: null }
     } catch (error) {
       return { error: error.message }
-    }
-  }
-
-  // Helper function to clear Google session data
-  const clearGoogleSession = async () => {
-    try {
-      // Clear Google-related cookies and session data
-      document.cookie.split(";").forEach((c) => {
-        const eqPos = c.indexOf("=");
-        const name = eqPos > -1 ? c.substr(0, eqPos) : c;
-        if (name.trim().includes('google') || name.trim().includes('oauth') || name.trim().includes('gapi')) {
-          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
-          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=." + window.location.hostname;
-        }
-      });
-
-      // Clear Google API session if available
-      if (window.google && window.google.accounts) {
-        try {
-          window.google.accounts.id.disableAutoSelect();
-        } catch (e) {
-          console.log('Google ID disableAutoSelect not available');
-        }
-      }
-
-      // Additional method: Use Google logout iframe
-      return new Promise((resolve) => {
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = 'https://accounts.google.com/logout';
-        
-        const cleanup = () => {
-          if (iframe.parentNode) {
-            iframe.parentNode.removeChild(iframe);
-          }
-          resolve();
-        };
-        
-        iframe.onload = cleanup;
-        iframe.onerror = cleanup;
-        
-        document.body.appendChild(iframe);
-        
-        // Cleanup after 3 seconds if no response
-        setTimeout(cleanup, 3000);
-      });
-    } catch (error) {
-      console.log('Error clearing Google session:', error);
     }
   }
 

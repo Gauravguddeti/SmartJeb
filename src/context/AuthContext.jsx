@@ -148,13 +148,10 @@ export const AuthProvider = ({ children }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}/`,
           queryParams: {
-            prompt: 'consent select_account', // Force consent and account picker
-            access_type: 'offline',
-            include_granted_scopes: 'false', // Don't include previous scopes
-            approval_prompt: 'force', // Force approval screen
-            hd: '', // Clear any domain restrictions
+            prompt: 'select_account',
+            access_type: 'offline'
           },
           skipBrowserRedirect: false
         }
@@ -320,6 +317,27 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.removeItem('smartjeb-guest-budget')
     sessionStorage.removeItem('migration-banner-dismissed')
   }
+
+  // Handle page unload to clear guest data if not migrating
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Check if migration is in progress
+      const migrationInProgress = sessionStorage.getItem('smartjeb-migration-in-progress');
+      
+      if (!migrationInProgress) {
+        // No migration in progress, clear guest migration data
+        localStorage.removeItem('smartjeb-guest-migration-data');
+        localStorage.removeItem('smartjeb-guest-backup');
+        console.log('Page unload - cleared guest migration data (no migration in progress)');
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   const value = {
     user,

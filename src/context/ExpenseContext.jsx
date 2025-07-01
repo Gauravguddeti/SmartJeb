@@ -295,15 +295,16 @@ export const ExpenseProvider = ({ children }) => {
         return;
       }
 
-      const { expenses: guestExpenses, timestamp, migrationPending } = JSON.parse(migrationData);
+      const { expenses: guestExpenses, timestamp, migrationPending, intentional } = JSON.parse(migrationData);
       
-      if (!migrationPending || !guestExpenses || guestExpenses.length === 0) {
-        console.log('No valid migration data:', { migrationPending, expenseCount: guestExpenses?.length });
+      // Only migrate if it was intentionally preserved for migration
+      if (!migrationPending || !intentional || !guestExpenses || guestExpenses.length === 0) {
+        console.log('Migration data not valid or not intentional:', { migrationPending, intentional, expenseCount: guestExpenses?.length });
         localStorage.removeItem('smartjeb-guest-migration-data');
         return;
       }
 
-      console.log(`Starting migration of ${guestExpenses.length} guest expenses`);
+      console.log(`Starting migration of ${guestExpenses.length} intentionally preserved guest expenses`);
       
       // Check if migration data is recent (within last 10 minutes to handle OAuth redirects)
       const migrationTime = new Date(timestamp);
@@ -373,6 +374,33 @@ export const ExpenseProvider = ({ children }) => {
     }
   };
 
+  // Function to clear guest data when not explicitly migrating
+  const clearGuestDataIfNotMigrating = () => {
+    try {
+      // Check if there's a migration in progress flag
+      const migrationInProgress = sessionStorage.getItem('smartjeb-migration-in-progress');
+      
+      if (!migrationInProgress) {
+        // No migration in progress, clear any guest data
+        localStorage.removeItem('smartjeb-guest-migration-data');
+        localStorage.removeItem('smartjeb-guest-backup');
+        
+        // If we're not in guest mode, also clear guest expenses
+        if (!isGuest) {
+          sessionStorage.removeItem('smartjeb-guest-expenses');
+          sessionStorage.removeItem('smartjeb-guest-goals');
+          console.log('Cleared guest data - not in guest mode and no migration in progress');
+        }
+      } else {
+        // Clear the migration progress flag after checking
+        sessionStorage.removeItem('smartjeb-migration-in-progress');
+        console.log('Migration in progress detected, preserving guest data');
+      }
+    } catch (error) {
+      console.error('Error clearing guest data:', error);
+    }
+  };
+
   // Load expenses based on auth state
   useEffect(() => {
     let isMounted = true; // Prevent state updates if component unmounted
@@ -381,6 +409,9 @@ export const ExpenseProvider = ({ children }) => {
       console.log('loadExpenses effect triggered:', { user: !!user, isGuest, isSupabaseConfigured });
       
       if (!isMounted) return; // Exit if component unmounted
+      
+      // Clear guest data if not explicitly migrating
+      clearGuestDataIfNotMigrating();
       
       if (user && !isGuest && isSupabaseConfigured) {
         console.log('Loading expenses for authenticated user');

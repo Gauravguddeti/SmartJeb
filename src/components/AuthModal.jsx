@@ -54,48 +54,29 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
   // Check if there are guest expenses to migrate
   const hasGuestExpenses = isGuest && guestExpenses && guestExpenses.length > 0;
 
-  // Function to preserve guest data before OAuth redirect
-  const preserveGuestData = () => {
-    if (hasGuestExpenses) {
-      try {
-        // Save guest expenses to localStorage with a special key for migration
-        const migrationData = {
-          expenses: guestExpenses,
-          timestamp: new Date().toISOString(),
-          migrationPending: true,
-          source: 'guest-modal'
-        };
-        
-        localStorage.setItem('smartjeb-guest-migration-data', JSON.stringify(migrationData));
-        console.log(`Preserved ${guestExpenses.length} guest expenses for migration:`, migrationData);
-        
-        // Also preserve in another key as backup
-        localStorage.setItem('smartjeb-guest-backup', JSON.stringify(migrationData));
-      } catch (error) {
-        console.error('Error preserving guest data:', error);
-      }
-    } else {
-      // If no guest expenses in modal, check sessionStorage directly
-      try {
-        const sessionExpenses = sessionStorage.getItem('smartjeb-guest-expenses');
-        if (sessionExpenses) {
-          const expenses = JSON.parse(sessionExpenses);
-          if (expenses && expenses.length > 0) {
-            const migrationData = {
-              expenses: expenses,
-              timestamp: new Date().toISOString(),
-              migrationPending: true,
-              source: 'session-direct'
-            };
-            
-            localStorage.setItem('smartjeb-guest-migration-data', JSON.stringify(migrationData));
-            localStorage.setItem('smartjeb-guest-backup', JSON.stringify(migrationData));
-            console.log(`Preserved ${expenses.length} guest expenses from session storage for migration`);
-          }
-        }
-      } catch (error) {
-        console.error('Error preserving session data:', error);
-      }
+  // Preserve guest data only when user explicitly tries to authenticate
+  const preserveGuestDataForMigration = () => {
+    // Only preserve if we have actual guest expenses and user is in guest mode
+    if (!hasGuestExpenses) {
+      return;
+    }
+
+    try {
+      const migrationData = {
+        expenses: guestExpenses,
+        timestamp: new Date().toISOString(),
+        migrationPending: true,
+        intentional: true, // Mark as intentional migration
+        source: 'auth-modal-explicit'
+      };
+      
+      localStorage.setItem('smartjeb-guest-migration-data', JSON.stringify(migrationData));
+      console.log(`Preserved ${guestExpenses.length} guest expenses for intentional migration:`, migrationData);
+      
+      // Set a short-lived flag indicating migration is in progress
+      sessionStorage.setItem('smartjeb-migration-in-progress', 'true');
+    } catch (error) {
+      console.error('Error preserving guest data for migration:', error);
     }
   };
 
@@ -112,7 +93,7 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
 
     try {
       // Preserve guest data before any authentication (in case of page refresh)
-      preserveGuestData();
+      preserveGuestDataForMigration();
       
       if (activeTab === 'signup') {
         if (formData.password !== formData.confirmPassword) {
@@ -161,7 +142,7 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
     setIsLoading(true);
     try {
       // Preserve guest data before OAuth redirect (which will cause page reload)
-      preserveGuestData();
+      preserveGuestDataForMigration();
       
       // Add a small delay to ensure data is saved
       await new Promise(resolve => setTimeout(resolve, 100));

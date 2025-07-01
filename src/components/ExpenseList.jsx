@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useExpense } from '../context/ExpenseContext';
+import { EXPENSE_CATEGORIES } from '../services/database';
+import { formatCurrency } from '../utils/formatters';
 import ExpenseForm from './ExpenseForm';
 import ReceiptModal from './ReceiptModal';
 

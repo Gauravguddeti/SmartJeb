@@ -8,14 +8,14 @@ import {
   Calendar,
   Tag,
   FileText,
+  Eye,
+  ZoomIn,
   Camera
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { useExpenses } from '../context/ExpenseContext';
-import { EXPENSE_CATEGORIES } from '../services/database';
-import { formatCurrency, getRelativeDateString } from '../utils/formatters';
-import { getReceiptDisplayUrl } from '../services/storageService';
+import { useExpense } from '../context/ExpenseContext';
 import ExpenseForm from './ExpenseForm';
+import ReceiptModal from './ReceiptModal';
 
 /**
  * ExpenseList Component - Display and manage expenses
@@ -27,15 +27,27 @@ const ExpenseList = ({ onAddExpense }) => {
     filter, 
     updateFilters, 
     deleteExpense 
-  } = useExpenses();
+  } = useExpense();
 
   const [editingExpense, setEditingExpense] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
 
   const handleDeleteExpense = async (id) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
       await deleteExpense(id);
     }
+  };
+
+  const handleViewReceipt = (receiptUrl, expenseDescription) => {
+    setSelectedReceipt({ url: receiptUrl, description: expenseDescription });
+    setShowReceiptModal(true);
+  };
+
+  const handleCloseReceiptModal = () => {
+    setShowReceiptModal(false);
+    setSelectedReceipt(null);
   };
 
   const getCategoryColor = (category) => {
@@ -56,6 +68,7 @@ const ExpenseList = ({ onAddExpense }) => {
   };
 
   return (
+    <>
     <div className="space-y-8 animate-fade-in">
       {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 animate-slide-up">
@@ -211,53 +224,37 @@ const ExpenseList = ({ onAddExpense }) => {
                       </div>
                       <div className="relative group">
                         {(() => {
-                          const receiptUrl = getReceiptDisplayUrl(expense.receiptUrl || expense.receipt);
+                          const receiptUrl = expense.receiptUrl || expense.receipt;
                           console.log('Receipt URL for expense', expense.id, ':', receiptUrl);
                           return receiptUrl ? (
-                            <img 
-                              src={receiptUrl} 
-                              alt="Receipt"
-                              className="w-full max-w-sm h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
-                              onClick={() => {
-                                // Create a modal to view the image
-                                const modal = document.createElement('div');
-                                modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
-                                modal.onclick = () => document.body.removeChild(modal);
-                                
-                                const img = document.createElement('img');
-                                img.src = receiptUrl;
-                                img.className = 'max-w-full max-h-full object-contain rounded-lg';
-                                img.onclick = (e) => e.stopPropagation();
-                                
-                                const closeBtn = document.createElement('button');
-                                closeBtn.innerHTML = '×';
-                                closeBtn.className = 'absolute top-4 right-4 text-white text-3xl font-bold bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70';
-                                closeBtn.onclick = () => document.body.removeChild(modal);
-                                
-                                modal.appendChild(img);
-                                modal.appendChild(closeBtn);
-                                document.body.appendChild(modal);
-                              }}
-                              onError={(e) => {
-                                console.error('Failed to load receipt image:', receiptUrl);
-                                e.target.style.display = 'none';
-                                const errorDiv = document.createElement('div');
-                                errorDiv.className = 'w-full max-w-sm h-32 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-500';
-                                errorDiv.innerHTML = '<span class="text-sm">Image not available</span>';
-                                e.target.parentNode.appendChild(errorDiv);
-                              }}
-                            />
+                            <div className="relative">
+                              <img 
+                                src={receiptUrl} 
+                                alt="Receipt"
+                                className="w-full max-w-sm h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
+                                onClick={() => handleViewReceipt(receiptUrl, expense.description)}
+                                onError={(e) => {
+                                  console.error('Failed to load receipt image:', receiptUrl);
+                                  e.target.style.display = 'none';
+                                  const errorDiv = document.createElement('div');
+                                  errorDiv.className = 'w-full max-w-sm h-32 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-500';
+                                  errorDiv.innerHTML = '<span class="text-sm">Image not available</span>';
+                                  e.target.parentNode.appendChild(errorDiv);
+                                }}
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-all duration-200 flex items-center justify-center">
+                                <div className="opacity-0 group-hover:opacity-100 bg-white/90 dark:bg-gray-800/90 px-3 py-2 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 transition-opacity flex items-center gap-2">
+                                  <ZoomIn className="w-3 h-3" />
+                                  Click to view full size
+                                </div>
+                              </div>
+                            </div>
                           ) : (
                             <div className="w-full max-w-sm h-32 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-500">
                               <span className="text-sm">Receipt URL not found</span>
                             </div>
                           );
                         })()}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-all duration-200 flex items-center justify-center">
-                          <div className="opacity-0 group-hover:opacity-100 bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 transition-opacity">
-                            Click to view full size
-                          </div>
-                        </div>
                       </div>
                     </div>
                   )}
@@ -292,6 +289,15 @@ const ExpenseList = ({ onAddExpense }) => {
         />
       )}
     </div>
+
+    {/* Receipt Modal */}
+    <ReceiptModal
+      isOpen={showReceiptModal}
+      onClose={handleCloseReceiptModal}
+      receiptUrl={selectedReceipt?.url}
+      expenseDescription={selectedReceipt?.description}
+    />
+    </>
   );
 };
 

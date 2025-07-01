@@ -615,6 +615,11 @@ export const ExpenseProvider = ({ children }) => {
     dispatch({ type: ACTIONS.SET_FILTER, payload: newFilter });
   };
 
+  // Update filters (partial update)
+  const updateFilters = (partialFilter) => {
+    dispatch({ type: ACTIONS.SET_FILTER, payload: partialFilter });
+  };
+
   // Clear filter
   const clearFilter = () => {
     dispatch({ 
@@ -789,6 +794,7 @@ export const ExpenseProvider = ({ children }) => {
     exportData,
     importData,
     setFilter,
+    updateFilters,
     clearFilter,
     getExpensesByDateRange,
     getExpensesInRange: getExpensesByDateRange, // Alias for compatibility

@@ -13,7 +13,7 @@ import {
   Camera
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { useExpense } from '../context/ExpenseContext';
+import { useExpenses } from '../context/ExpenseContext';
 import { EXPENSE_CATEGORIES } from '../services/database';
 import { formatCurrency } from '../utils/formatters';
 import ExpenseForm from './ExpenseForm';
@@ -29,7 +29,7 @@ const ExpenseList = ({ onAddExpense }) => {
     filter, 
     updateFilters, 
     deleteExpense 
-  } = useExpense();
+  } = useExpenses();
 
   const [editingExpense, setEditingExpense] = useState(null);
   const [showFilters, setShowFilters] = useState(false);

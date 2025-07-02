@@ -1,12 +1,31 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Menu, Home, Receipt, BarChart3, Target, Download, Plus, Settings, LogOut, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import VideoModal from './VideoModal';
 
 /**
  * Header Component
  */
 const Header = ({ activeTab, setActiveTab, onAddExpense, onShowAuth }) => {
   const { user, isGuest, signOut, isAuthenticated } = useAuth();
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check for mobile viewport on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Check on mount
+    checkMobile();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Debug authentication state
   useEffect(() => {
@@ -61,8 +80,11 @@ const Header = ({ activeTab, setActiveTab, onAddExpense, onShowAuth }) => {
             </div>
           </div>
 
-          {/* Menu button for mobile (future enhancement) */}
-          <button className="md:hidden p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/50 transition-all duration-300 hover:scale-105 active:scale-95">
+          {/* Menu button for mobile - opens video tutorial */}
+          <button 
+            className="md:hidden p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/50 transition-all duration-300 hover:scale-105 active:scale-95"
+            onClick={() => isMobile && setShowVideoModal(true)}
+          >
             <Menu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </button>
 
@@ -141,6 +163,15 @@ const Header = ({ activeTab, setActiveTab, onAddExpense, onShowAuth }) => {
           </div>
         </div>
       </div>
+      
+      {/* Add the VideoModal component */}
+      {isMobile && (
+        <VideoModal
+          isOpen={showVideoModal}
+          onClose={() => setShowVideoModal(false)}
+          videoSrc="/202507020942.mp4" // Path is relative to the public directory
+        />
+      )}
     </header>
   );
 };

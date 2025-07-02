@@ -17,6 +17,7 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [guestExpenses, setGuestExpenses] = useState([]);
+  const [migrateGuestExpenses, setMigrateGuestExpenses] = useState(true); // Default to true
 
   // Load guest expenses from storage
   useEffect(() => {
@@ -66,6 +67,16 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
 
   // Preserve guest data only when user explicitly tries to authenticate
   const preserveGuestDataForMigration = () => {
+    // Check if user wants to migrate expenses
+    if (!migrateGuestExpenses) {
+      console.log('❌ User chose not to migrate guest expenses');
+      // Clear any existing migration data since user doesn't want to migrate
+      localStorage.removeItem('smartjeb-guest-migration-data');
+      localStorage.removeItem('smartjeb-guest-backup');
+      sessionStorage.removeItem('smartjeb-migration-in-progress');
+      return;
+    }
+
     // Check both local state and session storage for guest expenses
     let expensesToMigrate = guestExpenses;
     
@@ -434,6 +445,33 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
                 <Chrome className="w-5 h-5" />
                 <span>Continue with Google</span>
               </button>
+            )}
+
+            {/* Migration Options - Only show if user has guest expenses */}
+            {hasGuestExpenses && (
+              <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-700">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <input
+                      type="checkbox"
+                      id="migrate-expenses"
+                      checked={migrateGuestExpenses}
+                      onChange={(e) => setMigrateGuestExpenses(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label htmlFor="migrate-expenses" className="text-sm font-medium text-blue-800 dark:text-blue-200 cursor-pointer">
+                      Keep my {guestExpenses.length} expense{guestExpenses.length !== 1 ? 's' : ''} after signing in
+                    </label>
+                    <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+                      {migrateGuestExpenses 
+                        ? "✅ Your guest expenses will be saved to your account" 
+                        : "❌ Your guest expenses will be discarded"}
+                    </p>
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* Guest Access */}

@@ -308,6 +308,16 @@ export const ExpenseProvider = ({ children }) => {
 
   // Function to migrate guest data after authentication
   const migrateGuestData = async () => {
+    // Add global migration lock
+    const globalMigrationLock = 'smartjeb-global-migration-lock';
+    if (localStorage.getItem(globalMigrationLock)) {
+      console.log('🔒 Global migration lock detected, skipping migration');
+      return;
+    }
+
+    // Set global migration lock
+    localStorage.setItem(globalMigrationLock, new Date().toISOString());
+    
     try {
       const migrationData = localStorage.getItem('smartjeb-guest-migration-data');
       const backupData = localStorage.getItem('smartjeb-guest-backup');
@@ -494,6 +504,7 @@ export const ExpenseProvider = ({ children }) => {
       localStorage.removeItem('smartjeb-guest-migration-data');
       localStorage.removeItem('smartjeb-guest-backup');
       sessionStorage.removeItem('smartjeb-migration-in-progress');
+      localStorage.removeItem('smartjeb-global-migration-lock'); // Clear global lock
       console.log(`🧹 Migration completed and cleaned up. Processed ${guestExpenses?.length || 0} guest expenses`);
       
     } catch (error) {
@@ -502,6 +513,7 @@ export const ExpenseProvider = ({ children }) => {
       localStorage.removeItem('smartjeb-guest-migration-data');
       localStorage.removeItem('smartjeb-guest-backup');
       sessionStorage.removeItem('smartjeb-migration-in-progress');
+      localStorage.removeItem('smartjeb-global-migration-lock'); // Clear global lock on error too
       toast.error('Some guest data could not be migrated');
     }
   };
@@ -674,6 +686,21 @@ export const ExpenseProvider = ({ children }) => {
         dispatch({ type: ACTIONS.ADD_EXPENSE, payload: savedExpense });
       } else {
         console.log('Saving to localStorage for guest user');
+        
+        // Check for duplicates in existing expenses before adding
+        const existingExpenses = state.expenses || [];
+        const isDuplicate = existingExpenses.some(existing => 
+          existing.description.trim().toLowerCase() === expenseData.description.trim().toLowerCase() &&
+          Math.abs(existing.amount - parseFloat(expenseData.amount)) < 0.01 &&
+          existing.date === expenseData.date
+        );
+        
+        if (isDuplicate) {
+          console.log('⚠️ Duplicate expense detected, not adding:', expenseData.description);
+          toast.warning('This expense already exists!');
+          return null;
+        }
+        
         // Save to localStorage for guests or when Supabase not configured
         expense.id = Date.now().toString();
         const newExpenses = [expense, ...state.expenses];
@@ -945,6 +972,7 @@ export const ExpenseProvider = ({ children }) => {
       // Clear migration data
       localStorage.removeItem('smartjeb-guest-migration-data');
       localStorage.removeItem('smartjeb-guest-backup');
+      localStorage.removeItem('smartjeb-global-migration-lock'); // Clear global lock
       sessionStorage.removeItem('smartjeb-migration-in-progress');
       
       console.log('✅ All migration tracking cleared');

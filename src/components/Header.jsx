@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Menu, Home, Receipt, BarChart3, Target, Download, Plus, Settings, LogOut, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -6,7 +6,18 @@ import { useAuth } from '../context/AuthContext';
  * Header Component
  */
 const Header = ({ activeTab, setActiveTab, onAddExpense, onShowAuth }) => {
-  const { user, isGuest, signOut } = useAuth();
+  const { user, isGuest, signOut, isAuthenticated } = useAuth();
+
+  // Debug authentication state
+  useEffect(() => {
+    console.log('🎯 Header auth state:', {
+      hasUser: !!user,
+      userEmail: user?.email,
+      isGuest,
+      isAuthenticated,
+      userMetadata: user?.user_metadata
+    });
+  }, [user, isGuest, isAuthenticated]);
 
   const handleSignOut = async () => {
     await signOut();

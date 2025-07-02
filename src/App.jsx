@@ -74,6 +74,11 @@ const AppContent = () => {
   // Add refresh warning for guest mode - only when guest has data and isn't migrating
   useEffect(() => {
     const handleBeforeUnload = (e) => {
+      // Don't show warning if auth modal is open (user is trying to authenticate)
+      if (showAuth) {
+        return;
+      }
+      
       // Only show warning if:
       // 1. User is in guest mode
       // 2. There's guest data to lose
@@ -103,7 +108,7 @@ const AppContent = () => {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [isGuest]);
+  }, [isGuest, showAuth]);
 
   // Show loading spinner while auth is initializing
   if (loading) {

@@ -60,13 +60,25 @@ export const AuthProvider = ({ children }) => {
       const wasGuest = isGuest;
       
       console.log('Auth state change:', event, 'User:', newUser?.email, 'Was guest:', wasGuest);
-      console.log('Session details:', session);
+      console.log('Session details:', {
+        hasSession: !!session,
+        hasUser: !!newUser,
+        userEmail: newUser?.email,
+        userId: newUser?.id,
+        isAnonymous: newUser?.is_anonymous
+      });
       
       setUser(newUser);
       setIsGuest(false);
       setLoading(false);
 
-      console.log('User state updated:', { newUser: !!newUser, isGuest: false, loading: false });
+      console.log('🔄 User state updated:', { 
+        hasUser: !!newUser, 
+        userEmail: newUser?.email,
+        isGuest: false, 
+        loading: false,
+        isAuthenticated: !!newUser
+      });
 
       // Just show success message - ExpenseContext will handle migration
       if (newUser && event === 'SIGNED_IN' && session?.access_token) {

@@ -290,30 +290,51 @@ export const ExpenseProvider = ({ children }) => {
   const migrateGuestData = async () => {
     try {
       const migrationData = localStorage.getItem('smartjeb-guest-migration-data');
-      if (!migrationData) {
-        console.log('No migration data found');
+      const backupData = localStorage.getItem('smartjeb-guest-backup');
+      
+      console.log('🔍 Checking for migration data...', { 
+        hasMigrationData: !!migrationData, 
+        hasBackupData: !!backupData,
+        user: !!user,
+        isGuest,
+        isSupabaseConfigured 
+      });
+
+      if (!migrationData && !backupData) {
+        console.log('❌ No migration data found');
         return;
       }
 
-      const { expenses: guestExpenses, timestamp, migrationPending, intentional } = JSON.parse(migrationData);
+      // Try primary migration data first, then backup
+      const dataToUse = migrationData || backupData;
+      const { expenses: guestExpenses, timestamp, migrationPending, intentional } = JSON.parse(dataToUse);
+      
+      console.log('📋 Migration data parsed:', { 
+        migrationPending, 
+        intentional, 
+        expenseCount: guestExpenses?.length,
+        timestamp: new Date(timestamp).toLocaleString() 
+      });
       
       // Only migrate if it was intentionally preserved for migration
       if (!migrationPending || !intentional || !guestExpenses || guestExpenses.length === 0) {
-        console.log('Migration data not valid or not intentional:', { migrationPending, intentional, expenseCount: guestExpenses?.length });
+        console.log('❌ Migration data not valid or not intentional:', { migrationPending, intentional, expenseCount: guestExpenses?.length });
         localStorage.removeItem('smartjeb-guest-migration-data');
+        localStorage.removeItem('smartjeb-guest-backup');
         return;
       }
 
-      console.log(`Starting migration of ${guestExpenses.length} intentionally preserved guest expenses`);
+      console.log(`🚀 Starting migration of ${guestExpenses.length} intentionally preserved guest expenses`);
       
-      // Check if migration data is recent (within last 10 minutes to handle OAuth redirects)
+      // Check if migration data is recent (within last 15 minutes to handle OAuth redirects)
       const migrationTime = new Date(timestamp);
       const now = new Date();
       const timeDiff = (now - migrationTime) / (1000 * 60); // difference in minutes
       
-      if (timeDiff > 10) {
-        console.log('Migration data is stale, removing...', { timeDiff });
+      if (timeDiff > 15) {
+        console.log('⏰ Migration data is stale, removing...', { timeDiff: timeDiff.toFixed(1) });
         localStorage.removeItem('smartjeb-guest-migration-data');
+        localStorage.removeItem('smartjeb-guest-backup');
         return;
       }
 
@@ -351,7 +372,8 @@ export const ExpenseProvider = ({ children }) => {
         await loadExpensesFromSupabase();
         
         if (successCount > 0) {
-          toast.success(`Successfully migrated ${successCount} expenses from guest mode!`);
+          console.log(`✅ Successfully migrated ${successCount} expenses to Supabase!`);
+          toast.success(`🎉 Successfully migrated ${successCount} expenses from guest mode!`);
         }
       } else {
         // Migrate to localStorage for non-Supabase setups
@@ -359,13 +381,15 @@ export const ExpenseProvider = ({ children }) => {
         const mergedExpenses = [...existingExpenses, ...guestExpenses];
         saveToStorage(mergedExpenses);
         dispatch({ type: ACTIONS.SET_EXPENSES, payload: mergedExpenses });
-        toast.success(`Successfully migrated ${guestExpenses.length} expenses from guest mode!`);
+        console.log(`✅ Successfully migrated ${guestExpenses.length} expenses to localStorage!`);
+        toast.success(`🎉 Successfully migrated ${guestExpenses.length} expenses from guest mode!`);
       }
 
       // Clean up migration data and flags
       localStorage.removeItem('smartjeb-guest-migration-data');
+      localStorage.removeItem('smartjeb-guest-backup');
       sessionStorage.removeItem('smartjeb-migration-in-progress');
-      console.log(`Migration completed for ${guestExpenses.length} expenses`);
+      console.log(`🧹 Migration completed and cleaned up for ${guestExpenses.length} expenses`);
       
     } catch (error) {
       console.error('Error during guest data migration:', error);

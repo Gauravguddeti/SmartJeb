@@ -165,7 +165,7 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
           return;
         }
         
-        toast.success('Signed in successfully!');
+        // Don't show success toast here - let AuthContext handle it to avoid duplicates
       }
       
       onSuccess();

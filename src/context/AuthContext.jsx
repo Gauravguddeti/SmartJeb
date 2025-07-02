@@ -83,9 +83,14 @@ export const AuthProvider = ({ children }) => {
       // Just show success message - ExpenseContext will handle migration
       if (newUser && event === 'SIGNED_IN' && session?.access_token) {
         const isCompleteAuth = session.user.email && session.user.id && !session.user.is_anonymous;
+        const lastSignInToastTime = localStorage.getItem('smartjeb-last-signin-toast');
+        const now = Date.now();
+        const oneMinuteAgo = now - (60 * 1000); // 1 minute in milliseconds
         
-        if (isCompleteAuth) {
+        // Only show toast if it's a complete auth and we haven't shown it in the last minute
+        if (isCompleteAuth && (!lastSignInToastTime || parseInt(lastSignInToastTime) < oneMinuteAgo)) {
           toast.success('Signed in successfully!');
+          localStorage.setItem('smartjeb-last-signin-toast', now.toString());
         }
       }
 

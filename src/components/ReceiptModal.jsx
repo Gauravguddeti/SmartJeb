@@ -31,7 +31,8 @@ const ReceiptModal = ({ isOpen, onClose, receiptUrl, expenseDescription }) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+      style={{ zIndex: 60000 }}
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"

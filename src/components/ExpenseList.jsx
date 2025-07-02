@@ -224,7 +224,7 @@ const ExpenseList = ({ onAddExpense }) => {
                         <Camera className="w-4 h-4 text-green-600" />
                         <span className="font-medium text-green-700 dark:text-green-400">Receipt attached</span>
                       </div>
-                      <div className="relative group">
+                      <div className="relative group/receipt">
                         {(() => {
                           const receiptUrl = expense.receiptUrl || expense.receipt;
                           console.log('Receipt URL for expense', expense.id, ':', receiptUrl);
@@ -244,8 +244,8 @@ const ExpenseList = ({ onAddExpense }) => {
                                   e.target.parentNode.appendChild(errorDiv);
                                 }}
                               />
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-all duration-200 flex items-center justify-center">
-                                <div className="opacity-0 group-hover:opacity-100 bg-white/90 dark:bg-gray-800/90 px-3 py-2 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 transition-opacity flex items-center gap-2">
+                              <div className="absolute inset-0 bg-black/0 group-hover/receipt:bg-black/10 rounded-lg transition-all duration-200 flex items-center justify-center">
+                                <div className="opacity-0 group-hover/receipt:opacity-100 bg-white/90 dark:bg-gray-800/90 px-3 py-2 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 transition-opacity flex items-center gap-2">
                                   <ZoomIn className="w-3 h-3" />
                                   Click to view full size
                                 </div>

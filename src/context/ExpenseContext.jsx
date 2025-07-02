@@ -190,10 +190,17 @@ export const ExpenseProvider = ({ children }) => {
       
       if (expenses.length > 0) {
         console.log(`✅ Loaded ${expenses.length} expenses from Supabase`);
-        // Only show toast for initial loads, not after migration
+        // Only show toast for initial loads on first visit, not subsequent loads or after migration
         const migrationJustCompleted = sessionStorage.getItem('smartjeb-migration-in-progress');
-        if (!migrationJustCompleted) {
+        const hasShownLoadToast = localStorage.getItem('smartjeb-load-toast-shown');
+        const currentDate = new Date().toDateString();
+        const lastToastDate = localStorage.getItem('smartjeb-load-toast-date');
+        
+        // Only show load toast once per day and not after migrations
+        if (!migrationJustCompleted && (!hasShownLoadToast || lastToastDate !== currentDate)) {
           toast.success(`Loaded ${expenses.length} expenses`);
+          localStorage.setItem('smartjeb-load-toast-shown', 'true');
+          localStorage.setItem('smartjeb-load-toast-date', currentDate);
         }
       } else {
         console.log('📭 No expenses found in Supabase for this user');
@@ -304,17 +311,45 @@ export const ExpenseProvider = ({ children }) => {
     try {
       const migrationData = localStorage.getItem('smartjeb-guest-migration-data');
       const backupData = localStorage.getItem('smartjeb-guest-backup');
+      const sessionGuestData = sessionStorage.getItem('smartjeb-guest-expenses');
       
       console.log('🔍 Checking for migration data...', { 
         hasMigrationData: !!migrationData, 
         hasBackupData: !!backupData,
+        hasSessionGuestData: !!sessionGuestData,
+        migrationDataLength: migrationData ? JSON.parse(migrationData).expenses?.length : 0,
+        backupDataLength: backupData ? JSON.parse(backupData).expenses?.length : 0,
+        sessionDataLength: sessionGuestData ? JSON.parse(sessionGuestData).length : 0,
         user: !!user,
         isGuest,
         isSupabaseConfigured 
       });
 
       if (!migrationData && !backupData) {
-        console.log('❌ No migration data found');
+        console.log('❌ No migration data found in localStorage');
+        // Check if there's session storage data we can migrate as a fallback
+        if (sessionGuestData && isGuest) {
+          console.log('🔄 Found session storage guest data as fallback, attempting direct migration...');
+          try {
+            const sessionExpenses = JSON.parse(sessionGuestData);
+            if (sessionExpenses && sessionExpenses.length > 0) {
+              console.log(`📋 Direct migrating ${sessionExpenses.length} expenses from session storage`);
+              // Create temporary migration data for this session data
+              const tempMigrationData = {
+                expenses: sessionExpenses,
+                timestamp: new Date().toISOString(),
+                migrationPending: true,
+                intentional: true,
+                source: 'session-fallback'
+              };
+              localStorage.setItem('smartjeb-guest-migration-data', JSON.stringify(tempMigrationData));
+              // Retry migration with this data
+              return await migrateGuestData();
+            }
+          } catch (error) {
+            console.error('❌ Error parsing session guest data:', error);
+          }
+        }
         return;
       }
 
@@ -365,16 +400,16 @@ export const ExpenseProvider = ({ children }) => {
         
         for (const expense of guestExpenses) {
           try {
-            // Check for duplicates before inserting
+            // Check for duplicates before inserting - be more strict with duplicate detection
             const isDuplicate = existingExpenses?.some(existing => 
-              existing.description === expense.description &&
-              existing.amount === parseFloat(expense.amount) &&
+              existing.description.trim() === expense.description.trim() &&
+              Math.abs(existing.amount - parseFloat(expense.amount)) < 0.01 && // Account for floating point precision
               existing.date === expense.date &&
               existing.user_id === user.id
             );
             
             if (isDuplicate) {
-              console.log(`⚠️ Skipping duplicate expense: ${expense.description}`);
+              console.log(`⚠️ Skipping duplicate expense: ${expense.description} (₹${expense.amount})`);
               continue;
             }
             
@@ -501,9 +536,6 @@ export const ExpenseProvider = ({ children }) => {
         } else {
           console.log('📊 Loading expenses from Supabase (no migration needed)');
           loadExpensesFromSupabase();
-        }
-        } else {
-          console.log('Skipping Supabase load due to pending migration');
         }
       } else {
         console.log('Loading expenses from storage (guest mode or no Supabase)');

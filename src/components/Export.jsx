@@ -28,7 +28,7 @@ const Export = () => {
         `"${expense.note || ''}"`,
         expense.receiptUrl || expense.receipt || ''
       ].join(','))
-    ].join('\\n');
+    ].join('\n');
     
     return csvContent;
   };
@@ -140,13 +140,18 @@ const Export = () => {
           const data = JSON.parse(content);
           await importExpensesData(data);
         } else if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
-          // Enhanced CSV parsing - handle different line endings
-          const lines = content.split(/\r?\n/).filter(line => line.trim());
-          console.log('Total lines found:', lines.length, 'Content preview:', content.substring(0, 200));
+          // Enhanced CSV parsing - handle different line endings and escape sequences
+          let processedContent = content
+            .replace(/\\n/g, '\n')  // Convert escaped newlines to actual newlines
+            .replace(/\r\n/g, '\n') // Normalize Windows line endings
+            .replace(/\r/g, '\n');  // Normalize Mac line endings
+            
+          const lines = processedContent.split('\n').filter(line => line.trim());
+          console.log('Total lines found:', lines.length, 'Content preview:', processedContent.substring(0, 200));
           
           if (lines.length < 2) {
             console.error('CSV parsing failed. Lines:', lines);
-            alert(`CSV file appears empty or invalid. Found ${lines.length} lines. Please check the file format.`);
+            toast.error(`CSV file appears empty or invalid. Found ${lines.length} lines. Please check the file format.`);
             return;
           }
           

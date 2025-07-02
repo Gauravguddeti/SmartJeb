@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Mail, User, Eye, EyeOff, Chrome } from 'lucide-react';
+import { X, Mail, User, Eye, EyeOff, Chrome, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
 const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
   const { signInWithEmail, signUpWithEmail, signInWithGoogle, enterGuestMode, isSupabaseConfigured, isGuest } = useAuth();
@@ -16,6 +17,8 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
     confirmPassword: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
   const [guestExpenses, setGuestExpenses] = useState([]);
   // Remove migration feature - guest data stays in guest mode
 
@@ -110,7 +113,11 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
           return;
         }
         
-        toast.success('Account created successfully! Please check your email to verify your account.');
+        // Show email verification screen instead of closing
+        setVerificationEmail(formData.email);
+        setShowEmailVerification(true);
+        toast.success('Account created! Please check your email to verify your account.');
+        return; // Don't close modal yet
       } else {
         const { user, error } = await signInWithEmail(formData.email, formData.password);
         
@@ -127,6 +134,56 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
       
     } catch (error) {
       toast.error(error.message || 'Authentication failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!verificationEmail) return;
+    
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: verificationEmail
+      });
+      
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Verification email sent! Please check your inbox.');
+      }
+    } catch (error) {
+      toast.error('Failed to resend verification email');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCheckVerification = async () => {
+    setIsLoading(true);
+    try {
+      // Try to sign in to check if email is verified
+      const { user, error } = await signInWithEmail(verificationEmail, formData.password);
+      
+      if (error) {
+        if (error.includes('Email not confirmed')) {
+          toast.error('Email not verified yet. Please check your inbox and click the verification link.');
+        } else {
+          toast.error(error);
+        }
+        return;
+      }
+      
+      // If we get here, email is verified and user is signed in
+      toast.success('Email verified successfully! Welcome to SmartJeb!');
+      setShowEmailVerification(false);
+      onSuccess();
+      onClose();
+      
+    } catch (error) {
+      toast.error('Failed to verify email status');
     } finally {
       setIsLoading(false);
     }
@@ -234,11 +291,6 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
               <h2 className="text-xl font-semibold text-gray-900">
                 Welcome to SmartJeb
               </h2>
-              {hasGuestExpenses && (
-                <p className="text-sm text-blue-600 mt-1">
-                  📊 {guestExpenses.length} expense{guestExpenses.length !== 1 ? 's' : ''} will be saved to your account
-                </p>
-              )}
             </div>
             <button
               onClick={onClose}
@@ -248,29 +300,85 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
             </button>
           </div>
 
-          {/* Tab Navigation */}
-          <div className="flex border-b border-gray-200">
-            <button
-              onClick={() => switchTab('signin')}
-              className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-                activeTab === 'signin'
-                  ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => switchTab('signup')}
-              className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-                activeTab === 'signup'
-                  ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              Sign Up
-            </button>
-          </div>
+          {/* Email Verification View */}
+          {showEmailVerification ? (
+            <div className="p-6 space-y-6">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Mail className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Verify Your Email
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  We've sent a verification link to<br />
+                  <strong className="text-gray-900">{verificationEmail}</strong>
+                </p>
+                <p className="text-sm text-gray-500 mb-6">
+                  Please check your email and click the verification link to activate your account.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <button
+                  onClick={handleCheckVerification}
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:transform-none disabled:hover:scale-100"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Checking...</span>
+                    </div>
+                  ) : (
+                    'I\'ve Verified My Email'
+                  )}
+                </button>
+
+                <button
+                  onClick={handleResendVerification}
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 border border-gray-300 hover:bg-gray-50 disabled:bg-gray-100 text-gray-700 font-medium rounded-xl transition-all duration-300"
+                >
+                  Resend Verification Email
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowEmailVerification(false);
+                    setActiveTab('signin');
+                  }}
+                  className="w-full py-2 text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Back to Sign In
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Tab Navigation */}
+              <div className="flex border-b border-gray-200">
+                <button
+                  onClick={() => switchTab('signin')}
+                  className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
+                    activeTab === 'signin'
+                      ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => switchTab('signup')}
+                  className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
+                    activeTab === 'signup'
+                      ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Sign Up
+                </button>
+              </div>
 
           {/* Form Content */}
           <div className="p-6">
@@ -430,6 +538,8 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
               </p>
             </div>
           </div>
+            </>
+          )}
         </div>
       </div>
     </>

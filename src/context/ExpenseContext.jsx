@@ -387,29 +387,57 @@ export const ExpenseProvider = ({ children }) => {
       }
 
       if (user && !isGuest && isSupabaseConfigured) {
+        // Check if migration already happened for this user
+        const migrationKey = `smartjeb-migration-completed-${user.id}`;
+        const migrationCompleted = localStorage.getItem(migrationKey);
+        
+        if (migrationCompleted) {
+          console.log('🔄 Migration already completed for this user, skipping...');
+          localStorage.removeItem('smartjeb-guest-migration-data');
+          localStorage.removeItem('smartjeb-guest-backup');
+          sessionStorage.removeItem('smartjeb-migration-in-progress');
+          return;
+        }
+        
         // Migrate to Supabase for authenticated users
         let successCount = 0;
         
         // First, get existing expenses to check for duplicates
         const { data: existingExpenses } = await supabase
           .from(TABLES.EXPENSES)
-          .select('description, amount, date, user_id')
+          .select('description, amount, date, user_id, created_at')
           .eq('user_id', user.id);
         
         console.log(`📊 Found ${existingExpenses?.length || 0} existing expenses in Supabase`);
         
+        // Remove duplicates from guest expenses themselves first
+        const uniqueGuestExpenses = [];
+        const seenExpenses = new Set();
+        
         for (const expense of guestExpenses) {
+          const expenseKey = `${expense.description.trim()}-${expense.amount}-${expense.date}`;
+          if (!seenExpenses.has(expenseKey)) {
+            seenExpenses.add(expenseKey);
+            uniqueGuestExpenses.push(expense);
+          } else {
+            console.log(`🗑️ Removing duplicate from guest data: ${expense.description} (₹${expense.amount})`);
+          }
+        }
+        
+        console.log(`📋 Deduplicated guest expenses: ${guestExpenses.length} → ${uniqueGuestExpenses.length}`);
+        
+        for (const expense of uniqueGuestExpenses) {
           try {
-            // Check for duplicates before inserting - be more strict with duplicate detection
+            // Check for duplicates against existing Supabase expenses
             const isDuplicate = existingExpenses?.some(existing => 
-              existing.description.trim() === expense.description.trim() &&
+              existing.description.trim().toLowerCase() === expense.description.trim().toLowerCase() &&
               Math.abs(existing.amount - parseFloat(expense.amount)) < 0.01 && // Account for floating point precision
               existing.date === expense.date &&
               existing.user_id === user.id
             );
             
             if (isDuplicate) {
-              console.log(`⚠️ Skipping duplicate expense: ${expense.description} (₹${expense.amount})`);
+              console.log(`⚠️ Skipping duplicate expense (already in Supabase): ${expense.description} (₹${expense.amount})`);
               continue;
             }
             
@@ -447,6 +475,10 @@ export const ExpenseProvider = ({ children }) => {
         if (successCount > 0) {
           console.log(`✅ Successfully migrated ${successCount} expenses to Supabase!`);
           toast.success(`🎉 Successfully migrated ${successCount} expenses from guest mode!`);
+          
+          // Mark migration as completed for this user
+          const migrationKey = `smartjeb-migration-completed-${user.id}`;
+          localStorage.setItem(migrationKey, new Date().toISOString());
         }
       } else {
         // Migrate to localStorage for non-Supabase setups
@@ -462,12 +494,14 @@ export const ExpenseProvider = ({ children }) => {
       localStorage.removeItem('smartjeb-guest-migration-data');
       localStorage.removeItem('smartjeb-guest-backup');
       sessionStorage.removeItem('smartjeb-migration-in-progress');
-      console.log(`🧹 Migration completed and cleaned up for ${guestExpenses.length} expenses`);
+      console.log(`🧹 Migration completed and cleaned up. Processed ${guestExpenses?.length || 0} guest expenses`);
       
     } catch (error) {
       console.error('Error during guest data migration:', error);
       // Clean up migration data even on error to prevent repeated attempts
       localStorage.removeItem('smartjeb-guest-migration-data');
+      localStorage.removeItem('smartjeb-guest-backup');
+      sessionStorage.removeItem('smartjeb-migration-in-progress');
       toast.error('Some guest data could not be migrated');
     }
   };
@@ -897,6 +931,105 @@ export const ExpenseProvider = ({ children }) => {
     }
   };
 
+  // Function to clear migration tracking (for testing purposes)
+  const clearMigrationTracking = () => {
+    try {
+      // Clear migration completed flags for all users
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('smartjeb-migration-completed-')) {
+          localStorage.removeItem(key);
+          console.log(`🧹 Removed migration tracking: ${key}`);
+        }
+      });
+      
+      // Clear migration data
+      localStorage.removeItem('smartjeb-guest-migration-data');
+      localStorage.removeItem('smartjeb-guest-backup');
+      sessionStorage.removeItem('smartjeb-migration-in-progress');
+      
+      console.log('✅ All migration tracking cleared');
+      toast.success('Migration tracking cleared - you can test migration again');
+    } catch (error) {
+      console.error('Error clearing migration tracking:', error);
+      toast.error('Failed to clear migration tracking');
+    }
+  };
+
+  // Function to remove duplicate expenses (for cleanup)
+  const removeDuplicateExpenses = async () => {
+    if (!user || !isSupabaseConfigured || !supabase) {
+      toast.error('Cannot remove duplicates - not authenticated or Supabase not configured');
+      return;
+    }
+
+    try {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: true });
+      
+      // Get all expenses for the user
+      const { data: allExpenses, error } = await supabase
+        .from(TABLES.EXPENSES)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true }); // Keep oldest duplicates
+
+      if (error) throw error;
+
+      if (!allExpenses || allExpenses.length === 0) {
+        toast.info('No expenses found to check for duplicates');
+        return;
+      }
+
+      // Find duplicates
+      const seen = new Map();
+      const duplicatesToDelete = [];
+
+      for (const expense of allExpenses) {
+        const key = `${expense.description.trim().toLowerCase()}-${expense.amount}-${expense.date}`;
+        
+        if (seen.has(key)) {
+          // This is a duplicate - add to deletion list
+          duplicatesToDelete.push(expense.id);
+          console.log(`🗑️ Found duplicate expense to delete: ${expense.description} (₹${expense.amount}) - ID: ${expense.id}`);
+        } else {
+          // First occurrence - keep it
+          seen.set(key, expense.id);
+        }
+      }
+
+      if (duplicatesToDelete.length === 0) {
+        toast.success('No duplicate expenses found');
+        return;
+      }
+
+      console.log(`🧹 Removing ${duplicatesToDelete.length} duplicate expenses...`);
+
+      // Delete duplicates
+      for (const duplicateId of duplicatesToDelete) {
+        const { error: deleteError } = await supabase
+          .from(TABLES.EXPENSES)
+          .delete()
+          .eq('id', duplicateId)
+          .eq('user_id', user.id);
+
+        if (deleteError) {
+          console.error(`❌ Error deleting duplicate expense ${duplicateId}:`, deleteError);
+        } else {
+          console.log(`✅ Deleted duplicate expense ${duplicateId}`);
+        }
+      }
+
+      // Reload expenses after cleanup
+      await loadExpensesFromSupabase();
+      
+      toast.success(`🎉 Removed ${duplicatesToDelete.length} duplicate expenses!`);
+    } catch (error) {
+      console.error('Error removing duplicate expenses:', error);
+      toast.error('Failed to remove duplicate expenses');
+    } finally {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: false });
+    }
+  };
+
   const value = {
     ...state,
     addExpense: addNewExpense,
@@ -911,7 +1044,9 @@ export const ExpenseProvider = ({ children }) => {
     clearFilter,
     getExpensesByDateRange,
     getExpensesInRange: getExpensesByDateRange, // Alias for compatibility
-    getExpenseStats
+    getExpenseStats,
+    clearMigrationTracking, // Expose the clearMigrationTracking function
+    removeDuplicateExpenses // Expose the removeDuplicateExpenses function
   };
 
   return (

@@ -433,20 +433,32 @@ export const ExpenseProvider = ({ children }) => {
     let isMounted = true; // Prevent state updates if component unmounted
     
     const loadExpenses = async () => {
-      console.log('loadExpenses effect triggered:', { user: !!user, isGuest, isSupabaseConfigured });
+      console.log('🔄 loadExpenses effect triggered:', { 
+        hasUser: !!user, 
+        userEmail: user?.email,
+        isGuest, 
+        isSupabaseConfigured,
+        isMounted 
+      });
       
       if (!isMounted) return; // Exit if component unmounted
+      
+      // Add small delay to ensure auth state is stable
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Clear guest data if not explicitly migrating
       clearGuestDataIfNotMigrating();
       
       if (user && !isGuest && isSupabaseConfigured) {
-        console.log('Loading expenses for authenticated user');
+        console.log('👤 Loading expenses for authenticated user:', user.email);
+        
         // First, check for guest data to migrate
+        console.log('🔍 Checking for guest data migration...');
         await migrateGuestData();
+        
         // Then load from Supabase for authenticated users (migration function will reload if needed)
         if (isMounted && !localStorage.getItem('smartjeb-guest-migration-data')) {
-          console.log('Loading expenses from Supabase');
+          console.log('📊 Loading expenses from Supabase after migration check');
           loadExpensesFromSupabase();
         } else {
           console.log('Skipping Supabase load due to pending migration');

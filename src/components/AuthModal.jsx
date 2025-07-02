@@ -23,15 +23,25 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
     if (isGuest) {
       try {
         const savedExpenses = sessionStorage.getItem('smartjeb-guest-expenses');
+        console.log('📋 Loading guest expenses in AuthModal:', { 
+          isGuest, 
+          hasSessionData: !!savedExpenses,
+          dataLength: savedExpenses ? JSON.parse(savedExpenses).length : 0
+        });
+        
         if (savedExpenses) {
-          setGuestExpenses(JSON.parse(savedExpenses));
+          const parsed = JSON.parse(savedExpenses);
+          setGuestExpenses(parsed);
+          console.log(`✅ Loaded ${parsed.length} guest expenses in AuthModal`);
         }
       } catch (error) {
-        console.error('Error loading guest expenses:', error);
+        console.error('❌ Error loading guest expenses:', error);
         setGuestExpenses([]);
       }
+    } else {
+      setGuestExpenses([]);
     }
-  }, [isGuest]);
+  }, [isGuest, isOpen]); // Add isOpen to dependency to reload when modal opens
 
   // Handle body scroll when modal opens/closes
   useEffect(() => {
@@ -56,15 +66,41 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
 
   // Preserve guest data only when user explicitly tries to authenticate
   const preserveGuestDataForMigration = () => {
+    // Check both local state and session storage for guest expenses
+    let expensesToMigrate = guestExpenses;
+    
+    // If no expenses in local state, try to get from session storage directly
+    if (!expensesToMigrate || expensesToMigrate.length === 0) {
+      try {
+        const sessionExpenses = sessionStorage.getItem('smartjeb-guest-expenses');
+        if (sessionExpenses) {
+          expensesToMigrate = JSON.parse(sessionExpenses);
+        }
+      } catch (error) {
+        console.error('❌ Error reading guest expenses from session storage:', error);
+      }
+    }
+
+    console.log('🔍 Checking guest expenses for migration:', {
+      localStateExpenses: guestExpenses?.length || 0,
+      sessionStorageExpenses: expensesToMigrate?.length || 0,
+      isGuest,
+      hasGuestExpenses
+    });
+
     // Only preserve if we have actual guest expenses and user is in guest mode
-    if (!hasGuestExpenses) {
-      console.log('No guest expenses to preserve:', { hasGuestExpenses, guestExpensesCount: guestExpenses?.length });
+    if (!isGuest || !expensesToMigrate || expensesToMigrate.length === 0) {
+      console.log('❌ No guest expenses to preserve:', { 
+        isGuest,
+        expenseCount: expensesToMigrate?.length,
+        hasGuestExpenses 
+      });
       return;
     }
 
     try {
       const migrationData = {
-        expenses: guestExpenses,
+        expenses: expensesToMigrate,
         timestamp: new Date().toISOString(),
         migrationPending: true,
         intentional: true, // Mark as intentional migration
@@ -72,7 +108,7 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
       };
       
       localStorage.setItem('smartjeb-guest-migration-data', JSON.stringify(migrationData));
-      console.log(`✅ Preserved ${guestExpenses.length} guest expenses for intentional migration:`, migrationData);
+      console.log(`✅ Preserved ${expensesToMigrate.length} guest expenses for intentional migration:`, migrationData);
       
       // Set a short-lived flag indicating migration is in progress
       sessionStorage.setItem('smartjeb-migration-in-progress', 'true');

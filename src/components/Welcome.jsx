@@ -18,14 +18,22 @@ const Welcome = ({ onComplete, isGuest = false }) => {
   useEffect(() => {
     const hasSeenWelcome = localStorage.getItem('smartjeb-welcome-seen');
     
-    // Always show welcome to new users (those who haven't seen it before)
+    // For authenticated users, also check if they have existing data
+    if (user && !isGuest && hasSeenWelcome) {
+      // If they've seen welcome before and are authenticated, skip it
+      setIsVisible(false);
+      onComplete?.();
+      return;
+    }
+    
+    // Show welcome to new users (those who haven't seen it before)
     if (!hasSeenWelcome) {
       setIsVisible(true);
     } else {
       setIsVisible(false);
       onComplete?.();
     }
-  }, [onComplete]);
+  }, [onComplete, user, isGuest]);
 
   const steps = [
     {
@@ -118,15 +126,28 @@ const Welcome = ({ onComplete, isGuest = false }) => {
     localStorage.setItem('smartjeb-welcome-seen', 'true');
     setIsVisible(false);
     
-    // For authenticated users, show profile setup
+    // For authenticated users, check if they need profile setup
     if (user && !isGuest) {
-      setShowProfileModal(true);
+      // Check if user has completed profile setup before
+      const profileKey = `smartjeb-profile-completed-${user.id}`;
+      const hasCompletedProfile = localStorage.getItem(profileKey);
+      
+      if (!hasCompletedProfile) {
+        setShowProfileModal(true);
+      } else {
+        onComplete?.();
+      }
     } else {
       onComplete?.();
     }
   };
 
   const handleProfileComplete = () => {
+    // Mark profile as completed for this user
+    if (user && !isGuest) {
+      const profileKey = `smartjeb-profile-completed-${user.id}`;
+      localStorage.setItem(profileKey, 'true');
+    }
     setShowProfileModal(false);
     onComplete?.();
   };

@@ -184,8 +184,21 @@ export const ExpenseProvider = ({ children }) => {
 
       if (error) throw error;
       
-      // Ensure we have valid data before dispatching
-      const expenses = data || [];
+      // Map Supabase fields to frontend format
+      const expenses = (data || []).map(expense => ({
+        ...expense,
+        receiptUrl: expense.receipt_url || null, // Map receipt_url to receiptUrl
+        paymentMethod: expense.payment_method || null, // Map payment_method to paymentMethod
+        note: expense.notes || expense.note || null // Map notes to note
+      }));
+      
+      console.log('📋 Mapped expenses with receipts:', expenses.map(e => ({ 
+        id: e.id, 
+        description: e.description, 
+        hasReceipt: !!e.receiptUrl,
+        receiptUrl: e.receiptUrl?.substring(0, 50) + '...' // Show first 50 chars
+      })));
+      
       dispatch({ type: ACTIONS.SET_EXPENSES, payload: expenses });
       
       if (expenses.length > 0) {

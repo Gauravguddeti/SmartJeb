@@ -183,9 +183,10 @@ export const AuthProvider = ({ children }) => {
       // For local-only mode, just clear the state
       setUser(null)
       setIsGuest(false)
-      // Clear all app state flags
+      // Clear app state flags but keep welcome for guest->auth users
       localStorage.removeItem('smartjeb-visited')
-      localStorage.removeItem('smartjeb-welcome-seen')
+      // Keep welcome-seen flag so users don't see onboarding again
+      // localStorage.removeItem('smartjeb-welcome-seen') // Don't clear this
       // Force a page reload to reset app state completely
       window.location.reload()
       return
@@ -211,9 +212,10 @@ export const AuthProvider = ({ children }) => {
       setUser(null)
       setIsGuest(false)
       
-      // Clear all app state flags and any stored auth data
+      // Clear app state data but keep welcome/onboarding flags per user
       localStorage.removeItem('smartjeb-visited')
-      localStorage.removeItem('smartjeb-welcome-seen')
+      // Keep welcome-seen flag so users don't see onboarding again
+      // localStorage.removeItem('smartjeb-welcome-seen') // Don't clear this
       localStorage.removeItem('smartjeb-expenses')
       sessionStorage.removeItem('smartjeb-guest-expenses')
       sessionStorage.removeItem('smartjeb-guest-goals')

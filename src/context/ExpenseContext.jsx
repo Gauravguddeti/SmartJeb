@@ -161,36 +161,49 @@ export const ExpenseProvider = ({ children }) => {
 
   // Supabase operations
   const loadExpensesFromSupabase = async () => {
-    console.log('loadExpensesFromSupabase called');
+    console.log('📊 loadExpensesFromSupabase called for user:', user?.email);
     if (!user || !isSupabaseConfigured || !supabase) {
-      console.log('Cannot load from Supabase:', { user: !!user, isSupabaseConfigured, supabase: !!supabase });
+      console.log('❌ Cannot load from Supabase:', { user: !!user, isSupabaseConfigured, supabase: !!supabase });
       return;
     }
     
     dispatch({ type: ACTIONS.SET_LOADING, payload: true });
     try {
-      console.log('Fetching expenses for user:', user.id);
+      console.log('🔍 Fetching expenses for user:', user.id);
       const { data, error } = await supabase
         .from(TABLES.EXPENSES)
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      console.log('Supabase query result:', { data: data?.length, error });
+      console.log('📋 Supabase query result:', { 
+        expenseCount: data?.length || 0, 
+        error: error?.message,
+        hasData: !!data 
+      });
 
       if (error) throw error;
-      dispatch({ type: ACTIONS.SET_EXPENSES, payload: data || [] });
       
-      if (data && data.length > 0) {
-        console.log(`Loaded ${data.length} expenses from Supabase`);
-        toast.success(`Loaded ${data.length} expenses`);
+      // Ensure we have valid data before dispatching
+      const expenses = data || [];
+      dispatch({ type: ACTIONS.SET_EXPENSES, payload: expenses });
+      
+      if (expenses.length > 0) {
+        console.log(`✅ Loaded ${expenses.length} expenses from Supabase`);
+        // Only show toast for initial loads, not after migration
+        const migrationJustCompleted = sessionStorage.getItem('smartjeb-migration-in-progress');
+        if (!migrationJustCompleted) {
+          toast.success(`Loaded ${expenses.length} expenses`);
+        }
       } else {
-        console.log('No expenses found in Supabase');
+        console.log('📭 No expenses found in Supabase for this user');
       }
     } catch (error) {
-      console.error('Error loading expenses from Supabase:', error);
+      console.error('❌ Error loading expenses from Supabase:', error);
       dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
       toast.error('Failed to load expenses');
+    } finally {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: false });
     }
   };
 
@@ -341,8 +354,30 @@ export const ExpenseProvider = ({ children }) => {
       if (user && !isGuest && isSupabaseConfigured) {
         // Migrate to Supabase for authenticated users
         let successCount = 0;
+        
+        // First, get existing expenses to check for duplicates
+        const { data: existingExpenses } = await supabase
+          .from(TABLES.EXPENSES)
+          .select('description, amount, date, user_id')
+          .eq('user_id', user.id);
+        
+        console.log(`📊 Found ${existingExpenses?.length || 0} existing expenses in Supabase`);
+        
         for (const expense of guestExpenses) {
           try {
+            // Check for duplicates before inserting
+            const isDuplicate = existingExpenses?.some(existing => 
+              existing.description === expense.description &&
+              existing.amount === parseFloat(expense.amount) &&
+              existing.date === expense.date &&
+              existing.user_id === user.id
+            );
+            
+            if (isDuplicate) {
+              console.log(`⚠️ Skipping duplicate expense: ${expense.description}`);
+              continue;
+            }
+            
             const expenseData = {
               amount: parseFloat(expense.amount),
               description: expense.description,
@@ -356,19 +391,22 @@ export const ExpenseProvider = ({ children }) => {
               updated_at: new Date().toISOString()
             };
 
+            console.log(`➕ Migrating expense: ${expense.description} (₹${expense.amount})`);
             const { error } = await supabase.from(TABLES.EXPENSES).insert([expenseData]);
             if (error) {
-              console.error('Error migrating expense:', error);
+              console.error('❌ Error migrating expense:', expense.description, error);
             } else {
               successCount++;
+              console.log(`✅ Successfully migrated: ${expense.description}`);
             }
           } catch (error) {
-            console.error('Error migrating expense:', error);
+            console.error('❌ Error migrating expense:', error);
             // Continue with other expenses even if one fails
           }
         }
         
         // Reload expenses from Supabase to include migrated data
+        console.log('🔄 Reloading all expenses from Supabase after migration...');
         await loadExpensesFromSupabase();
         
         if (successCount > 0) {
@@ -452,14 +490,18 @@ export const ExpenseProvider = ({ children }) => {
       if (user && !isGuest && isSupabaseConfigured) {
         console.log('👤 Loading expenses for authenticated user:', user.email);
         
-        // First, check for guest data to migrate
-        console.log('🔍 Checking for guest data migration...');
-        await migrateGuestData();
+        // Check if migration is in progress to avoid concurrent operations
+        const migrationInProgress = sessionStorage.getItem('smartjeb-migration-in-progress');
+        const migrationData = localStorage.getItem('smartjeb-guest-migration-data');
         
-        // Then load from Supabase for authenticated users (migration function will reload if needed)
-        if (isMounted && !localStorage.getItem('smartjeb-guest-migration-data')) {
-          console.log('📊 Loading expenses from Supabase after migration check');
+        if (migrationData && migrationInProgress) {
+          console.log('🚧 Migration in progress, triggering migration instead of regular load');
+          // First, check for guest data to migrate
+          await migrateGuestData();
+        } else {
+          console.log('📊 Loading expenses from Supabase (no migration needed)');
           loadExpensesFromSupabase();
+        }
         } else {
           console.log('Skipping Supabase load due to pending migration');
         }

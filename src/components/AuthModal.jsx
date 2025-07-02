@@ -20,6 +20,8 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [guestExpenses, setGuestExpenses] = useState([]);
+  const [emailError, setEmailError] = useState('');
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   // Remove migration feature - guest data stays in guest mode
 
   // Load guest expenses from storage
@@ -78,10 +80,62 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
   };
 
   const handleInputChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
+    
+    // Check email availability in real-time when in signup mode
+    if (name === 'email' && activeTab === 'signup' && value.includes('@') && value.length > 5) {
+      checkEmailExists(value);
+    } else if (name === 'email') {
+      // Clear email error when email field is changed/emptied
+      setEmailError('');
+    }
+  };
+  
+  // Check if email already exists in the database
+  const checkEmailExists = async (email) => {
+    if (!isSupabaseConfigured || !supabase || !email || isCheckingEmail) return;
+    
+    setIsCheckingEmail(true);
+    try {
+      // First check if the email format is valid
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setEmailError('');
+        return;
+      }
+      
+      // Use Supabase auth to check if email exists
+      const { data, error } = await supabase.auth.admin.listUsers({
+        filter: {
+          email: email
+        },
+        page: 1,
+        perPage: 1
+      }).catch(() => {
+        // If the admin API fails (permissions), use sign-in attempt as fallback
+        return supabase.auth.signInWithOtp({
+          email: email,
+          options: {
+            shouldCreateUser: false
+          }
+        });
+      });
+      
+      // This will check if the email already exists
+      if (data?.users?.length > 0 || data?.user) {
+        setEmailError('This email is already registered. Please sign in instead.');
+      } else {
+        setEmailError('');
+      }
+    } catch (error) {
+      console.error('Error checking email:', error);
+    } finally {
+      setIsCheckingEmail(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -95,10 +149,25 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
       if (activeTab === 'signup') {
         if (formData.password !== formData.confirmPassword) {
           toast.error('Passwords do not match');
+          setIsLoading(false);
           return;
         }
         if (formData.password.length < 6) {
           toast.error('Password must be at least 6 characters');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Check email one more time before submitting
+        if (isCheckingEmail) {
+          toast.error('Please wait while we check email availability');
+          setIsLoading(false);
+          return;
+        }
+        
+        if (emailError) {
+          toast.error(emailError);
+          setIsLoading(false);
           return;
         }
         
@@ -109,7 +178,12 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
         );
         
         if (error) {
+          // Check for duplicate email error message
+          if (error.toLowerCase().includes('email') && error.toLowerCase().includes('already')) {
+            setEmailError('This email is already registered. Please sign in instead.');
+          }
           toast.error(error);
+          setIsLoading(false);
           return;
         }
         
@@ -230,11 +304,13 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
       confirmPassword: ''
     });
     setShowPassword(false);
+    setEmailError(''); // Clear email error when resetting form
   };
 
   const switchTab = (tab) => {
     setActiveTab(tab);
     resetForm();
+    setEmailError(''); // Clear any email validation errors when switching tabs
   };
 
   const modalContent = (
@@ -414,9 +490,23 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white text-gray-900"
+                  className={`w-full px-4 py-2.5 border ${emailError ? 'border-red-400 focus:ring-red-500' : 'border-gray-200 focus:ring-blue-500'} rounded-xl focus:ring-2 focus:border-transparent transition-all duration-300 bg-white text-gray-900`}
                   placeholder="Enter your email"
                 />
+                {isCheckingEmail && activeTab === 'signup' && (
+                  <div className="flex items-center mt-1 text-xs text-gray-500">
+                    <div className="w-3 h-3 border-2 border-gray-300 border-t-transparent rounded-full animate-spin mr-1"></div>
+                    <span>Checking email availability...</span>
+                  </div>
+                )}
+                {emailError && activeTab === 'signup' && (
+                  <div className="mt-1 text-xs text-red-500 flex items-center">
+                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                    </svg>
+                    {emailError}
+                  </div>
+                )}
               </div>
 
               {/* Password field */}

@@ -1,20 +1,23 @@
 import React, { useState } from 'react';
 import { Download, Upload, FileText, Calendar, BarChart3, Share2, Smartphone } from 'lucide-react';
 import { useExpenses } from '../context/ExpenseContext';
+import { useAuth } from '../context/AuthContext';
 import { formatCurrency } from '../utils/formatters';
 import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 
 /**
  * Export Component - Export and share expense data
  */
 const Export = () => {
   const { expenses, addExpense } = useExpenses();
+  const { isGuest } = useAuth();
   const [exportType, setExportType] = useState('csv');
   const [dateRange, setDateRange] = useState('all');
   const [isExporting, setIsExporting] = useState(false);
 
   const generateCSV = (data) => {
-    const headers = ['Date', 'Description', 'Category', 'Amount (₹)', 'Note'];
+    const headers = ['Date', 'Description', 'Category', 'Amount (₹)', 'Note', 'Receipt'];
     const csvContent = [
       headers.join(','),
       ...data.map(expense => [
@@ -22,7 +25,8 @@ const Export = () => {
         `"${expense.description}"`,
         expense.category,
         expense.amount,
-        `"${expense.note || ''}"`
+        `"${expense.note || ''}"`,
+        expense.receiptUrl || expense.receipt || ''
       ].join(','))
     ].join('\\n');
     
@@ -107,8 +111,17 @@ const Export = () => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+      
+      // Show success message with helpful info for guest users
+      const hasReceipts = filteredData.some(exp => exp.receiptUrl || exp.receipt);
+      if (isGuest) {
+        toast.success(`📁 Exported ${filteredData.length} expenses${hasReceipts ? ' with receipts' : ''}! You can import this file after signing up.`);
+      } else {
+        toast.success(`📁 Exported ${filteredData.length} expenses successfully!`);
+      }
     } catch (error) {
       console.error('Export failed:', error);
+      toast.error('Export failed. Please try again.');
     } finally {
       setIsExporting(false);
     }

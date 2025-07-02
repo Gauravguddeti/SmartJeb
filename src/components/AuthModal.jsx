@@ -424,6 +424,9 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
                 <span className="block text-orange-600 mt-1 font-medium">
                   Guest expenses are temporary and won't be saved to your account
                 </span>
+                <span className="block text-blue-600 mt-1 text-xs">
+                  💡 Tip: You can export your expenses before signing up to save them
+                </span>
               </p>
             </div>
           </div>

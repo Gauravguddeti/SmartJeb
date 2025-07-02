@@ -658,7 +658,9 @@ export const ExpenseProvider = ({ children }) => {
     const dataToExport = {
       expenses: state.expenses,
       exportDate: new Date().toISOString(),
-      version: '1.0'
+      version: '1.0',
+      totalExpenses: state.expenses.length,
+      includesReceipts: state.expenses.some(exp => exp.receiptUrl || exp.receipt)
     };
 
     const dataStr = JSON.stringify(dataToExport, null, 2);
@@ -673,6 +675,13 @@ export const ExpenseProvider = ({ children }) => {
     document.body.removeChild(link);
     
     URL.revokeObjectURL(url);
+    
+    // Show helpful message for guest users
+    if (isGuest) {
+      toast.success(`📁 Exported ${state.expenses.length} expenses with all data including receipts! You can import this file after signing up.`);
+    } else {
+      toast.success(`📁 Exported ${state.expenses.length} expenses successfully!`);
+    }
   };
 
   // Import data from JSON

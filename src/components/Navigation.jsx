@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Home, Receipt, BarChart3, Plus, Target, Download, Settings } from 'lucide-react';
 
 /**
  * Bottom Navigation Component
+ * Enhanced with proper fixed positioning for all mobile devices
  */
 const Navigation = ({ activeTab, setActiveTab, onAddExpense }) => {
   const navItems = [
@@ -13,10 +14,46 @@ const Navigation = ({ activeTab, setActiveTab, onAddExpense }) => {
     { id: 'export', label: 'Export', icon: Download },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
+  
+  // Use effect to ensure the navigation bar is always in viewport
+  useEffect(() => {
+    // Create a style element
+    const styleEl = document.createElement('style');
+    // This CSS ensures the nav bar is always at the bottom of the viewport
+    styleEl.innerHTML = `
+      @media screen and (max-width: 767px) {
+        body {
+          padding-bottom: 65px !important;
+          min-height: 100% !important;
+          position: relative !important;
+        }
+        
+        #mobile-nav {
+          position: fixed !important;
+          bottom: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          z-index: 9999 !important;
+          width: 100% !important;
+          transform: translateZ(0) !important;
+          -webkit-transform: translateZ(0) !important;
+          backface-visibility: hidden !important;
+          -webkit-backface-visibility: hidden !important;
+        }
+      }
+    `;
+    // Add the style to the document
+    document.head.appendChild(styleEl);
+    
+    // Clean up on unmount
+    return () => {
+      document.head.removeChild(styleEl);
+    };
+  }, []);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg border-t border-gray-200/50 dark:border-gray-700/50 md:hidden shadow-2xl transition-colors duration-300 z-[999] w-full">
-      <div className="container mx-auto px-2 sticky bottom-0">
+    <nav id="mobile-nav" className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg border-t border-gray-200/50 dark:border-gray-700/50 md:hidden shadow-2xl transition-colors duration-300 z-[9999] w-full">
+      <div className="container mx-auto px-2">
         <div className="flex items-center justify-between py-2 overflow-x-auto scrollbar-hide">
           <div className="flex items-center space-x-1 flex-1">
             {navItems.map((item) => {

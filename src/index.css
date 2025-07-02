@@ -9,12 +9,17 @@
     padding-bottom: env(safe-area-inset-bottom, 5rem);
   }
   
+  .pb-nav {
+    padding-bottom: 70px !important; /* Space for navigation */
+  }
+  
   /* Force the navigation bar to be fixed to the bottom of the viewport */
   body {
-    position: relative;
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-    overscroll-behavior-y: none; /* Prevent overscroll bounce effects */
+    position: relative !important;
+    min-height: 100vh !important;
+    min-height: -webkit-fill-available !important;
+    overscroll-behavior-y: none !important; /* Prevent overscroll bounce effects */
+    padding-bottom: 70px !important; /* Space for the navigation bar */
   }
   
   /* Fix iOS height issues */
@@ -27,6 +32,15 @@
     .fixed {
       position: fixed !important;
     }
+  }
+  
+  /* Ensure the mobile nav is always at the bottom */
+  #mobile-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
   }
   
   .animate-pulse-gentle {

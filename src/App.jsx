@@ -227,7 +227,7 @@ const AppContent = () => {
   }  return (
     <ExpenseProvider>
       <GoalsProvider>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 animate-fade-in transition-colors duration-300 flex flex-col pb-safe">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 animate-fade-in transition-colors duration-300 flex flex-col pb-nav">
           {/* Welcome Screen */}
           {showWelcome && (
             <Welcome 
@@ -282,7 +282,7 @@ const AppContent = () => {
           />
 
           {/* Main content - with extra bottom padding on mobile for the fixed navigation */}
-          <main className="container mx-auto px-4 py-6 pb-32 md:pb-6 flex-grow overflow-x-hidden">
+          <main className="container mx-auto px-4 py-6 pb-28 md:pb-6 flex-grow overflow-x-hidden" style={{ marginBottom: "70px" }}>
             <div className="animate-slide-up max-w-full">
               {renderActiveComponent()}
             </div>

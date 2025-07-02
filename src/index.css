@@ -9,6 +9,26 @@
     padding-bottom: env(safe-area-inset-bottom, 5rem);
   }
   
+  /* Force the navigation bar to be fixed to the bottom of the viewport */
+  body {
+    position: relative;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overscroll-behavior-y: none; /* Prevent overscroll bounce effects */
+  }
+  
+  /* Fix iOS height issues */
+  html {
+    height: -webkit-fill-available;
+  }
+  
+  /* Fix position:fixed on iOS */
+  @supports (-webkit-touch-callout: none) {
+    .fixed {
+      position: fixed !important;
+    }
+  }
+  
   .animate-pulse-gentle {
     animation: pulse-gentle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }

@@ -282,7 +282,7 @@ const AppContent = () => {
           />
 
           {/* Main content - with extra bottom padding on mobile for the fixed navigation */}
-          <main className="container mx-auto px-4 py-6 pb-28 md:pb-6 flex-grow overflow-x-hidden">
+          <main className="container mx-auto px-4 py-6 pb-32 md:pb-6 flex-grow overflow-x-hidden">
             <div className="animate-slide-up max-w-full">
               {renderActiveComponent()}
             </div>

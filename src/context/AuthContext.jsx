@@ -50,60 +50,74 @@ export const AuthProvider = ({ children }) => {
 
     getInitialSession()
 
-    // Listen for auth changes
+    // Listen for auth changes with improved handling to prevent duplicate toasts
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return; // Prevent state updates after unmount
       
+      // Get last event to detect duplicates
+      const lastEvent = localStorage.getItem('smartjeb-last-auth-event');
+      const lastTime = localStorage.getItem('smartjeb-last-auth-time');
+      const now = Date.now();
+      const debounceTime = 2000; // 2 seconds debounce
+      
+      console.log(`Auth event: ${event}, Last event: ${lastEvent}, Time since last: ${lastTime ? now - parseInt(lastTime) : 'n/a'}ms`);
+      
+      // Prevent duplicate events within debounce time
+      if (lastEvent === event && lastTime && (now - parseInt(lastTime) < debounceTime)) {
+        console.log(`Ignoring duplicate ${event} event within debounce time`);
+        return;
+      }
+      
+      // Update last event tracking
+      localStorage.setItem('smartjeb-last-auth-event', event);
+      localStorage.setItem('smartjeb-last-auth-time', now.toString());
+      
       const newUser = session?.user ?? null;
-      const wasGuest = isGuest;
       
-      console.log('Auth state change:', event, 'User:', newUser?.email, 'Was guest:', wasGuest);
-      console.log('Session details:', {
-        hasSession: !!session,
-        hasUser: !!newUser,
-        userEmail: newUser?.email,
-        userId: newUser?.id,
-        isAnonymous: newUser?.is_anonymous
-      });
+      // Log only the important details to keep console clean
+      console.log('Auth state change:', event, 'User:', newUser?.email);
       
-      setUser(newUser);
-      setIsGuest(false);
-      setLoading(false);
-
-      console.log('🔄 User state updated:', { 
-        hasUser: !!newUser, 
-        userEmail: newUser?.email,
-        isGuest: false, 
-        loading: false,
-        isAuthenticated: !!newUser
-      });
-
-      // Just show success message
-      if (newUser && event === 'SIGNED_IN' && session?.access_token) {
-        const isCompleteAuth = session.user.email && session.user.id && !session.user.is_anonymous;
-        const lastSignInToastTime = localStorage.getItem('smartjeb-last-signin-toast');
-        const now = Date.now();
-        const oneMinuteAgo = now - (60 * 1000); // 1 minute in milliseconds
-        
-        // Only show toast if it's a complete auth and we haven't shown it in the last minute
-        if (isCompleteAuth && (!lastSignInToastTime || parseInt(lastSignInToastTime) < oneMinuteAgo)) {
-          toast.success('Signed in successfully!');
-          localStorage.setItem('smartjeb-last-signin-toast', now.toString());
+      // Special handling for different event types
+      switch (event) {
+        case 'SIGNED_IN': {
+          setUser(newUser);
+          setIsGuest(false);
+          setLoading(false);
+          
+          // Show toast only for true user sign-ins with email (not token refreshes)
+          if (newUser?.email && !newUser.is_anonymous) {
+            const signInKey = `signin-${newUser.id}-${new Date().toDateString()}`;
+            const hasShownToday = localStorage.getItem(signInKey);
+            
+            if (!hasShownToday) {
+              toast.success('Signed in successfully!');
+              localStorage.setItem(signInKey, 'true');
+            }
+          }
+          break;
         }
-      }
-
-      // Handle sign out
-      if (event === 'SIGNED_OUT') {
-        setUser(null)
-        setIsGuest(false)
-        console.log('User signed out, state reset');
-      }
-
-      // Handle token refresh errors
-      if (event === 'TOKEN_REFRESHED') {
-        console.log('Token refreshed successfully');
+        
+        case 'SIGNED_OUT': {
+          setUser(null);
+          setIsGuest(false);
+          console.log('User signed out, state reset');
+          break;
+        }
+        
+        case 'TOKEN_REFRESHED': {
+          // Don't update UI state for token refreshes
+          console.log('Token refreshed - ignoring');
+          return;
+        }
+        
+        default: {
+          // For any other events, just update the state without toasts
+          setUser(newUser);
+          setIsGuest(false);
+          setLoading(false);
+        }
       }
     })
 

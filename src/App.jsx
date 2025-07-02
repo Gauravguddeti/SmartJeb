@@ -221,27 +221,6 @@ const AppContent = () => {
           onGuestLogin={handleGuestLogin}
           onSuccess={handleAuthSuccess}
         />
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 3000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-              borderRadius: '12px',
-              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-            },
-            success: {
-              style: {
-                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-              },
-            },
-            error: {
-              style: {
-                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-              },
-            },
-          }}
         />
       </>
     );
@@ -267,18 +246,18 @@ const AppContent = () => {
                 color: '#fff',
                 borderRadius: '12px',
                 boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                zIndex: 99999, // Ensure toasts appear above modals
+                zIndex: 2147483647, // Maximum z-index value (2^31 - 1)
               },
               success: {
                 style: {
                   background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                  zIndex: 99999,
+                  zIndex: 2147483647,
                 },
               },
               error: {
                 style: {
                   background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                  zIndex: 99999,
+                  zIndex: 2147483647,
                 },
               },
             }}

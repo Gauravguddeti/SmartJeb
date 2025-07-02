@@ -16,6 +16,7 @@ import Welcome from './components/Welcome';
 import AIChatbot from './components/AIChatbot';
 import LandingPage from './components/LandingPage';
 import AuthModal from './components/AuthModal';
+import GuestWarningBanner from './components/GuestWarningBanner';
 import EmailVerificationBanner from './components/EmailVerificationBanner';
 
 /**
@@ -285,6 +286,9 @@ const AppContent = () => {
               zIndex: 99999, // Container z-index
             }}
           />
+
+          {/* Guest Warning Banner */}
+          <GuestWarningBanner />
 
           {/* Email Verification Banner */}
           <EmailVerificationBanner />

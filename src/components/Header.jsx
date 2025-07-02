@@ -11,6 +11,10 @@ const Header = ({ activeTab, setActiveTab, onAddExpense, onShowAuth }) => {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  // State to store the position of hamburger menu for video pointer
+  const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
+  const menuRef = React.useRef(null);
+  
   // Check for mobile viewport on mount and resize
   useEffect(() => {
     const checkMobile = () => {
@@ -25,6 +29,24 @@ const Header = ({ activeTab, setActiveTab, onAddExpense, onShowAuth }) => {
     
     // Clean up
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  // Update menu position when it's mounted and when window resizes
+  useEffect(() => {
+    const updateMenuPosition = () => {
+      if (menuRef.current) {
+        const rect = menuRef.current.getBoundingClientRect();
+        setMenuPosition({
+          top: rect.top + rect.height/2,
+          right: window.innerWidth - rect.right + rect.width/2
+        });
+      }
+    };
+    
+    updateMenuPosition();
+    window.addEventListener('resize', updateMenuPosition);
+    
+    return () => window.removeEventListener('resize', updateMenuPosition);
   }, []);
 
   // Debug authentication state
@@ -82,6 +104,7 @@ const Header = ({ activeTab, setActiveTab, onAddExpense, onShowAuth }) => {
 
           {/* Menu button for mobile - opens video tutorial */}
           <button 
+            ref={menuRef}
             className="md:hidden p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/50 transition-all duration-300 hover:scale-105 active:scale-95"
             onClick={() => isMobile && setShowVideoModal(true)}
           >
@@ -170,6 +193,7 @@ const Header = ({ activeTab, setActiveTab, onAddExpense, onShowAuth }) => {
           isOpen={showVideoModal}
           onClose={() => setShowVideoModal(false)}
           videoSrc="/202507020942.mp4" // Path is relative to the public directory
+          menuPosition={menuPosition}
         />
       )}
     </header>

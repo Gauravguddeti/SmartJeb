@@ -16,7 +16,6 @@ import Welcome from './components/Welcome';
 import AIChatbot from './components/AIChatbot';
 import LandingPage from './components/LandingPage';
 import AuthModal from './components/AuthModal';
-import GuestMigrationBanner from './components/GuestMigrationBanner';
 import EmailVerificationBanner from './components/EmailVerificationBanner';
 
 /**
@@ -82,11 +81,9 @@ const AppContent = () => {
       // Only show warning if:
       // 1. User is in guest mode
       // 2. There's guest data to lose
-      // 3. Migration is not currently in progress
-      const isMigrating = sessionStorage.getItem('smartjeb-migration-in-progress');
       const hasGuestData = sessionStorage.getItem('smartjeb-guest-expenses');
       
-      if (isGuest && hasGuestData && !isMigrating) {
+      if (isGuest && hasGuestData) {
         try {
           const guestExpenses = JSON.parse(hasGuestData);
           if (guestExpenses && guestExpenses.length > 0) {
@@ -289,9 +286,6 @@ const AppContent = () => {
             }}
           />
 
-          {/* Guest Migration Banner */}
-          <GuestMigrationBanner onShowAuth={handleShowAuth} />
-          
           {/* Email Verification Banner */}
           <EmailVerificationBanner />
 

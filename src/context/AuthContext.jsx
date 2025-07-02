@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!newUser
       });
 
-      // Just show success message - ExpenseContext will handle migration
+      // Just show success message
       if (newUser && event === 'SIGNED_IN' && session?.access_token) {
         const isCompleteAuth = session.user.email && session.user.id && !session.user.is_anonymous;
         const lastSignInToastTime = localStorage.getItem('smartjeb-last-signin-toast');
@@ -214,7 +214,6 @@ export const AuthProvider = ({ children }) => {
       // Clear all app state flags and any stored auth data
       localStorage.removeItem('smartjeb-visited')
       localStorage.removeItem('smartjeb-welcome-seen')
-      localStorage.removeItem('smartjeb-guest-migration-data')
       localStorage.removeItem('smartjeb-expenses')
       sessionStorage.removeItem('smartjeb-guest-expenses')
       sessionStorage.removeItem('smartjeb-guest-goals')
@@ -280,21 +279,17 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.removeItem('smartjeb-guest-goals')
     sessionStorage.removeItem('smartjeb-guest-categories')
     sessionStorage.removeItem('smartjeb-guest-budget')
-    sessionStorage.removeItem('migration-banner-dismissed')
   }
 
-  // Handle page unload to clear guest data if not migrating
+  // Clean up any leftover migration data on page unload
   useEffect(() => {
     const handleBeforeUnload = () => {
-      // Check if migration is in progress
-      const migrationInProgress = sessionStorage.getItem('smartjeb-migration-in-progress');
-      
-      if (!migrationInProgress) {
-        // No migration in progress, clear guest migration data
-        localStorage.removeItem('smartjeb-guest-migration-data');
-        localStorage.removeItem('smartjeb-guest-backup');
-        console.log('Page unload - cleared guest migration data (no migration in progress)');
-      }
+      // Always clean up migration data on page unload
+      localStorage.removeItem('smartjeb-guest-migration-data');
+      localStorage.removeItem('smartjeb-guest-backup');
+      localStorage.removeItem('smartjeb-global-migration-lock');
+      sessionStorage.removeItem('smartjeb-migration-in-progress');
+      console.log('Page unload - cleaned up migration data');
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);

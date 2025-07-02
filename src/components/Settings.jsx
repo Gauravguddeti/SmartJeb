@@ -25,7 +25,7 @@ import toast from 'react-hot-toast';
  */
 const Settings = ({ darkMode, toggleDarkMode }) => {
   const { user, signOut } = useAuth();
-  const { expenses, exportData, importData, clearAllData, clearMigrationTracking, removeDuplicateExpenses } = useExpenses();
+  const { expenses, exportData, importData, clearAllData, removeDuplicateExpenses } = useExpenses();
   const { goals } = useGoals();
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [notifications, setNotifications] = useState(true);
@@ -281,13 +281,13 @@ Type "DELETE" to confirm:`;
         />
       </SettingsSection>
 
-      {/* Debug Section - Migration Tools */}
+      {/* Debug Section - Data Tools */}
       {user && (
-        <SettingsSection title="🔧 Migration Debug Tools">
+        <SettingsSection title="🔧 Data Management Tools">
           <div className="space-y-3">
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
-              <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-2">
-                <strong>Note:</strong> These are debug tools for fixing migration issues.
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+              <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                <strong>Note:</strong> These are tools for managing your data.
               </p>
             </div>
             
@@ -296,14 +296,6 @@ Type "DELETE" to confirm:`;
               title="Remove Duplicate Expenses"
               description="Clean up duplicate expenses in your account"
               action={removeDuplicateExpenses}
-              rightElement={<ChevronRight className="w-5 h-5 text-gray-400" />}
-            />
-            
-            <SettingsItem
-              icon={Shield}
-              title="Clear Migration Tracking"
-              description="Reset migration flags (for testing migration again)"
-              action={clearMigrationTracking}
               rightElement={<ChevronRight className="w-5 h-5 text-gray-400" />}
             />
           </div>

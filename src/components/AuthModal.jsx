@@ -17,7 +17,7 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [guestExpenses, setGuestExpenses] = useState([]);
-  const [migrateGuestExpenses, setMigrateGuestExpenses] = useState(true); // Default to true
+  // Remove migration feature - guest data stays in guest mode
 
   // Load guest expenses from storage
   useEffect(() => {
@@ -65,70 +65,13 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
   // Check if there are guest expenses to migrate
   const hasGuestExpenses = isGuest && guestExpenses && guestExpenses.length > 0;
 
-  // Preserve guest data only when user explicitly tries to authenticate
-  const preserveGuestDataForMigration = () => {
-    // Check if user wants to migrate expenses
-    if (!migrateGuestExpenses) {
-      console.log('❌ User chose not to migrate guest expenses');
-      // Clear any existing migration data since user doesn't want to migrate
-      localStorage.removeItem('smartjeb-guest-migration-data');
-      localStorage.removeItem('smartjeb-guest-backup');
-      sessionStorage.removeItem('smartjeb-migration-in-progress');
-      return;
-    }
-
-    // Check both local state and session storage for guest expenses
-    let expensesToMigrate = guestExpenses;
-    
-    // If no expenses in local state, try to get from session storage directly
-    if (!expensesToMigrate || expensesToMigrate.length === 0) {
-      try {
-        const sessionExpenses = sessionStorage.getItem('smartjeb-guest-expenses');
-        if (sessionExpenses) {
-          expensesToMigrate = JSON.parse(sessionExpenses);
-        }
-      } catch (error) {
-        console.error('❌ Error reading guest expenses from session storage:', error);
-      }
-    }
-
-    console.log('🔍 Checking guest expenses for migration:', {
-      localStateExpenses: guestExpenses?.length || 0,
-      sessionStorageExpenses: expensesToMigrate?.length || 0,
-      isGuest,
-      hasGuestExpenses
-    });
-
-    // Only preserve if we have actual guest expenses and user is in guest mode
-    if (!isGuest || !expensesToMigrate || expensesToMigrate.length === 0) {
-      console.log('❌ No guest expenses to preserve:', { 
-        isGuest,
-        expenseCount: expensesToMigrate?.length,
-        hasGuestExpenses 
-      });
-      return;
-    }
-
-    try {
-      const migrationData = {
-        expenses: expensesToMigrate,
-        timestamp: new Date().toISOString(),
-        migrationPending: true,
-        intentional: true, // Mark as intentional migration
-        source: 'auth-modal-explicit'
-      };
-      
-      localStorage.setItem('smartjeb-guest-migration-data', JSON.stringify(migrationData));
-      console.log(`✅ Preserved ${expensesToMigrate.length} guest expenses for intentional migration:`, migrationData);
-      
-      // Set a short-lived flag indicating migration is in progress
-      sessionStorage.setItem('smartjeb-migration-in-progress', 'true');
-      
-      // Also backup to ensure data persistence during OAuth redirects
-      localStorage.setItem('smartjeb-guest-backup', JSON.stringify(migrationData));
-    } catch (error) {
-      console.error('❌ Error preserving guest data for migration:', error);
-    }
+  // Guest data stays in guest mode - no migration to authenticated accounts
+  const clearGuestMigrationData = () => {
+    // Clear any existing migration data since we don't migrate anymore
+    localStorage.removeItem('smartjeb-guest-migration-data');
+    localStorage.removeItem('smartjeb-guest-backup');
+    sessionStorage.removeItem('smartjeb-migration-in-progress');
+    console.log('🧹 Cleared any existing guest migration data - guests stay separate');
   };
 
   const handleInputChange = (e) => {
@@ -143,8 +86,8 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
     setIsLoading(true);
 
     try {
-      // Preserve guest data before any authentication (in case of page refresh)
-      preserveGuestDataForMigration();
+      // Clear any existing migration data since guest stays separate
+      clearGuestMigrationData();
       
       if (activeTab === 'signup') {
         if (formData.password !== formData.confirmPassword) {
@@ -192,8 +135,8 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
   const handleGoogleAuth = async () => {
     setIsLoading(true);
     try {
-      // Preserve guest data before OAuth redirect (which will cause page reload)
-      preserveGuestDataForMigration();
+      // Clear any existing migration data since guest stays separate  
+      clearGuestMigrationData();
       
       // Add a small delay to ensure data is saved
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -447,27 +390,21 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
               </button>
             )}
 
-            {/* Migration Options - Only show if user has guest expenses */}
+            {/* Guest Data Warning - Show if user has guest expenses */}
             {hasGuestExpenses && (
-              <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-700">
+              <div className="mb-4 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-200 dark:border-orange-700">
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0 mt-0.5">
-                    <input
-                      type="checkbox"
-                      id="migrate-expenses"
-                      checked={migrateGuestExpenses}
-                      onChange={(e) => setMigrateGuestExpenses(e.target.checked)}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                    />
+                    <div className="w-4 h-4 rounded-full bg-orange-500 flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">!</span>
+                    </div>
                   </div>
                   <div className="flex-1">
-                    <label htmlFor="migrate-expenses" className="text-sm font-medium text-blue-800 dark:text-blue-200 cursor-pointer">
-                      Keep my {guestExpenses.length} expense{guestExpenses.length !== 1 ? 's' : ''} after signing in
-                    </label>
-                    <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
-                      {migrateGuestExpenses 
-                        ? "✅ Your guest expenses will be saved to your account" 
-                        : "❌ Your guest expenses will be discarded"}
+                    <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
+                      Your {guestExpenses.length} guest expense{guestExpenses.length !== 1 ? 's' : ''} will remain separate
+                    </p>
+                    <p className="text-xs text-orange-600 dark:text-orange-300 mt-1">
+                      Guest data stays in guest mode only. Sign in to start fresh with your account.
                     </p>
                   </div>
                 </div>
@@ -483,12 +420,10 @@ const AuthModal = ({ isOpen, onClose, onGuestLogin, onSuccess }) => {
                 Continue as Guest
               </button>
               <p className="text-xs text-gray-500 text-center mt-2">
-                Guest mode won't save your data permanently
-                {hasGuestExpenses && (
-                  <span className="block text-blue-600 mt-1">
-                    💡 Tip: Sign up to keep your {guestExpenses.length} current expense{guestExpenses.length !== 1 ? 's' : ''}!
-                  </span>
-                )}
+                ⚠️ Guest mode is for trying out the app only
+                <span className="block text-orange-600 mt-1 font-medium">
+                  Guest expenses are temporary and won't be saved to your account
+                </span>
               </p>
             </div>
           </div>

@@ -5,11 +5,14 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 // Check if Supabase is properly configured
-const isSupabaseConfigured = supabaseUrl && 
+const isSupabaseConfigured = Boolean(
+  supabaseUrl && 
   supabaseAnonKey && 
+  supabaseUrl.startsWith('https://') &&
+  supabaseAnonKey.startsWith('eyJ') && // JWT tokens start with 'eyJ'
   supabaseUrl !== 'your-supabase-url' && 
-  supabaseAnonKey !== 'your-supabase-anon-key' &&
-  supabaseUrl.startsWith('https://')
+  supabaseAnonKey !== 'your-supabase-anon-key'
+)
 
 let supabase = null
 

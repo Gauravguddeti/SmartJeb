@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
 import { categorizeExpense, trainCategorization } from '../services/aiService.js';
 import { useAuth } from './AuthContext';
 import { supabase, TABLES, isSupabaseConfigured } from '../lib/supabase';
@@ -27,7 +27,8 @@ const initialState = {
     category: 'all',
     dateRange: 'all',
     searchTerm: ''
-  }
+  },
+  expensesLoaded: false // Add this flag to track if expenses have been loaded
 };
 
 // Apply filters to expenses
@@ -92,7 +93,8 @@ const expenseReducer = (state, action) => {
         expenses: action.payload,
         filteredExpenses: applyFilters(action.payload, state.filter),
         loading: false,
-        error: null
+        error: null,
+        expensesLoaded: true // Set flag to true when expenses are loaded
       };
     
     case ACTIONS.ADD_EXPENSE:
@@ -158,6 +160,7 @@ const expenseReducer = (state, action) => {
 export const ExpenseProvider = ({ children }) => {
   const [state, dispatch] = useReducer(expenseReducer, initialState);
   const { user, isGuest } = useAuth();
+  const isMounted = useRef(true);
 
   // Supabase operations
   const loadExpensesFromSupabase = async () => {
@@ -365,10 +368,17 @@ export const ExpenseProvider = ({ children }) => {
         userEmail: user?.email,
         isGuest, 
         isSupabaseConfigured,
-        isMounted 
+        isMounted,
+        expensesLoaded: state.expensesLoaded
       });
       
       if (!isMounted) return; // Exit if component unmounted
+      
+      // Skip loading if expenses are already loaded
+      if (state.expensesLoaded) {
+        console.log('✅ Expenses already loaded, skipping fetch');
+        return;
+      }
       
       // Add small delay to ensure auth state is stable
       await new Promise(resolve => setTimeout(resolve, 100));

@@ -9,47 +9,118 @@ const ReceiptModal = ({ isOpen, onClose, receiptUrl, expenseDescription }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [processedUrl, setProcessedUrl] = useState('');
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const imgRef = useRef(null);
+  const modalRef = useRef(null);
   
   useEffect(() => {
-    console.log("ReceiptModal: receiptUrl received:", receiptUrl);
-    if (receiptUrl) {
-      // Reset states when a new URL comes in
-      setImageLoaded(false);
-      setImageError(false);
+    // When modal opens, focus on it for keyboard interaction
+    if (isOpen && modalRef.current) {
+      modalRef.current.focus();
+    }
+  }, [isOpen]);
+  
+  useEffect(() => {
+    console.log("ReceiptModal: receiptUrl received:", receiptUrl?.substring(0, 50));
+    if (!receiptUrl) return;
+    
+    // Reset states when a new URL comes in
+    setImageLoaded(false);
+    setImageError(false);
+    
+    // Create a separate function to handle different URL types
+    const processReceiptUrl = () => {
+      // For blob URLs, use directly
+      if (typeof receiptUrl === 'string' && receiptUrl.startsWith('blob:')) {
+        console.log("Using existing blob URL");
+        setProcessedUrl(receiptUrl);
+        return;
+      }
       
-      // Handle different receipt URL formats
-      if (typeof receiptUrl === 'string') {
-        // Create a new image to check if the URL is valid
-        const img = new Image();
-        img.onload = () => {
-          setProcessedUrl(receiptUrl);
-          setImageLoaded(true);
-        };
-        img.onerror = () => {
-          console.error("Failed to load image from URL:", receiptUrl);
-          // Try to use as Data URL if it's a base64 string
-          if (receiptUrl.startsWith('data:')) {
+      // For data URLs, use directly
+      if (typeof receiptUrl === 'string' && receiptUrl.startsWith('data:')) {
+        console.log("Using data URL");
+        setProcessedUrl(receiptUrl);
+        return;
+      }
+      
+      // For regular URLs (e.g. Supabase URLs)
+      if (typeof receiptUrl === 'string' && (receiptUrl.startsWith('http') || receiptUrl.startsWith('https'))) {
+        console.log("Using remote URL");
+        // Create a blob URL from the remote URL to avoid CORS issues
+        fetch(receiptUrl)
+          .then(response => response.blob())
+          .then(blob => {
+            const objectUrl = URL.createObjectURL(blob);
+            setProcessedUrl(objectUrl);
+          })
+          .catch(error => {
+            console.error("Failed to fetch remote image:", error);
+            // Fallback to direct URL
             setProcessedUrl(receiptUrl);
-          } else {
             setImageError(true);
-          }
-        };
-        img.src = receiptUrl;
-      } else if (receiptUrl instanceof File) {
-        // If it's a File object, create an object URL
+          });
+        return;
+      }
+      
+      // For File objects
+      if (receiptUrl instanceof File) {
+        console.log("Creating object URL from File");
         const objectUrl = URL.createObjectURL(receiptUrl);
         setProcessedUrl(objectUrl);
-      } else {
-        console.error("Invalid receipt URL format:", receiptUrl);
-        setImageError(true);
+        return;
       }
-    }
+      
+      // For any other format, try as string
+      console.log("Trying as string URL");
+      setProcessedUrl(String(receiptUrl));
+    };
+    
+    processReceiptUrl();
+    
+    // Cleanup function to revoke object URLs
+    return () => {
+      if (processedUrl && processedUrl.startsWith('blob:')) {
+        console.log("Revoking object URL on cleanup");
+        URL.revokeObjectURL(processedUrl);
+      }
+    };
   }, [receiptUrl]);
+  
+  // Handle image load success
+  const handleImageLoad = (e) => {
+    setImageLoaded(true);
+    setImageError(false);
+    if (e.target) {
+      setImageSize({
+        width: e.target.naturalWidth,
+        height: e.target.naturalHeight
+      });
+    }
+  };
+  
+  // Handle image load error
+  const handleImageError = () => {
+    console.error("Image failed to load:", processedUrl);
+    setImageError(true);
+    setImageLoaded(false);
+    
+    // If we haven't tried the original URL directly, fall back to it
+    if (processedUrl !== receiptUrl && receiptUrl) {
+      console.log("Falling back to original URL");
+      setProcessedUrl(receiptUrl);
+    }
+  };
 
-  if (!isOpen || !receiptUrl) {
+  if (!isOpen) {
     return null;
   }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      handleClose();
+    }
+  };
 
   const handleDownload = () => {
     if (!processedUrl && receiptUrl) {
@@ -104,6 +175,7 @@ const ReceiptModal = ({ isOpen, onClose, receiptUrl, expenseDescription }) => {
         backdropFilter: 'blur(4px)'
       }}
       onClick={handleBackdropClick}
+      onKeyDown={handleKeyDown}
       role="dialog"
       aria-modal="true"
       aria-label="Receipt viewer"
@@ -123,7 +195,7 @@ const ReceiptModal = ({ isOpen, onClose, receiptUrl, expenseDescription }) => {
           pointerEvents: 'none'
         }}
       >
-        <div className="relative max-w-7xl max-h-full w-full h-full flex flex-col pointer-events-auto">
+        <div className="relative max-w-7xl max-h-full w-full h-full flex flex-col pointer-events-auto" ref={modalRef} tabIndex="-1">
           {/* Header */}
           <div className="flex items-center justify-between p-4 bg-white/10 backdrop-blur-sm rounded-t-lg">
             <h3 className="text-white font-semibold text-lg">
@@ -150,7 +222,7 @@ const ReceiptModal = ({ isOpen, onClose, receiptUrl, expenseDescription }) => {
           {/* Image Container */}
           <div className="flex-1 flex items-center justify-center bg-white/5 backdrop-blur-sm rounded-b-lg overflow-hidden">
             {!imageError ? (
-              <div className="relative max-w-full max-h-full">
+              <div className="relative max-w-full max-h-full overflow-auto">
                 {!imageLoaded && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
@@ -158,44 +230,50 @@ const ReceiptModal = ({ isOpen, onClose, receiptUrl, expenseDescription }) => {
                 )}
                 <img
                   ref={imgRef}
-                  src={processedUrl}
+                  src={processedUrl || receiptUrl}
                   alt={`Receipt for ${expenseDescription || 'expense'}`}
                   className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${
                     imageLoaded ? 'opacity-100' : 'opacity-0'
                   }`}
-                  onLoad={() => {
-                    console.log("Image loaded successfully in modal");
-                    setImageLoaded(true);
+                  onLoad={handleImageLoad}
+                  onError={handleImageError}
+                  style={{ 
+                    maxHeight: 'calc(100vh - 160px)', 
+                    width: 'auto',
+                    margin: '0 auto'
                   }}
-                  onError={(e) => {
-                    console.error("Image failed to load in modal:", processedUrl);
-                    setImageError(true);
-                    setImageLoaded(true);
-                  }}
-                  style={{ maxHeight: 'calc(100vh - 200px)', width: 'auto' }}
                   crossOrigin="anonymous"
                 />
+                
+                {imageLoaded && imageSize.width > 0 && (
+                  <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                    {imageSize.width} × {imageSize.height}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center p-8">
                 <div className="w-24 h-24 mx-auto mb-4 bg-white/10 rounded-full flex items-center justify-center">
-                  <ZoomIn className="w-12 h-12 text-white/60" />
+                  <FileType className="w-12 h-12 text-white/60" />
                 </div>
                 <h4 className="text-white font-semibold mb-2">Cannot Display Receipt</h4>
                 <p className="text-white/70 mb-4">
-                  The receipt image could not be loaded. This might be due to:
+                  The receipt image could not be loaded properly.
                 </p>
-                <ul className="text-white/60 text-sm space-y-1 mb-6">
-                  <li>• Corrupted image data</li>
-                  <li>• Network connectivity issues</li>
-                  <li>• Unsupported image format</li>
-                </ul>
-                <button
-                  onClick={handleDownload}
-                  className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200"
-                >
-                  Try Download
-                </button>
+                <div className="flex justify-center space-x-4">
+                  <button
+                    onClick={handleDownload}
+                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200"
+                  >
+                    Download Receipt
+                  </button>
+                  <button
+                    onClick={handleClose}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -203,23 +281,13 @@ const ReceiptModal = ({ isOpen, onClose, receiptUrl, expenseDescription }) => {
           {/* Instructions */}
           <div className="p-2 text-center">
             <p className="text-white/60 text-sm">
-              Click outside the image or press the X button to close
+              Click outside the image or press ESC to close
             </p>
           </div>
         </div>
       </div>
     </div>
   );
-
-  // Cleanup effect
-  useEffect(() => {
-    return () => {
-      // Clean up any object URLs when component unmounts
-      if (processedUrl && processedUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(processedUrl);
-      }
-    };
-  }, [processedUrl]);
 
   return createPortal(modalContent, document.body);
 };

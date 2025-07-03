@@ -51,21 +51,21 @@ const ExpenseList = ({ onAddExpense }) => {
       return;
     }
     
-    // For authenticated users, make sure the URL is properly formatted
-    if (receiptUrl && typeof receiptUrl === 'string' && !receiptUrl.startsWith('blob:') && !receiptUrl.startsWith('data:')) {
-      // If it's a URL that doesn't start with http/https, it might need additional processing
-      if (!receiptUrl.startsWith('http')) {
-        console.log("Receipt URL might need processing:", receiptUrl.substring(0, 50) + "...");
-      }
-    }
-    
+    // Show the modal immediately
     setSelectedReceipt({ url: receiptUrl, description: expenseDescription });
     setShowReceiptModal(true);
   };
 
   const handleCloseReceiptModal = () => {
+    // Clean up object URL if needed
+    if (selectedReceipt?.url?.startsWith('blob:')) {
+      URL.revokeObjectURL(selectedReceipt.url);
+    }
     setShowReceiptModal(false);
-    setSelectedReceipt(null);
+    // Use a small delay to avoid visual glitches
+    setTimeout(() => {
+      setSelectedReceipt(null);
+    }, 300);
   };
 
   const getCategoryColor = (category) => {
@@ -249,6 +249,8 @@ const ExpenseList = ({ onAddExpense }) => {
                               <img 
                                 src={receiptUrl} 
                                 alt="Receipt"
+                                loading="lazy"
+                                decoding="async"
                                 className="w-full max-w-sm h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
                                 onClick={(e) => {
                                   e.preventDefault();
@@ -263,23 +265,16 @@ const ExpenseList = ({ onAddExpense }) => {
                                 }}
                               />
                               <div className="absolute inset-0 bg-black/0 group-hover/receipt:bg-black/10 rounded-lg transition-all duration-200 flex items-center justify-center">
-                                <div className="opacity-0 group-hover/receipt:opacity-100 bg-white/90 dark:bg-gray-800/90 px-3 py-2 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 transition-opacity flex items-center gap-2">
-                                  <ZoomIn className="w-3 h-3" />
-                                  Click to view full size
-                                </div>
-                              </div>
-                              <div className="absolute top-2 right-2 z-10">
                                 <button 
-                                  type="button"
                                   onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    window.open(receiptUrl, '_blank');
+                                    handleViewReceipt(receiptUrl, expense.description);
                                   }}
-                                  className="bg-white/80 dark:bg-gray-800/80 p-1.5 rounded-full text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700"
-                                  title="Open receipt in new tab"
+                                  className="opacity-0 group-hover/receipt:opacity-100 bg-primary-600 text-white px-3 py-2 rounded-md text-xs font-medium transition-all transform scale-95 hover:scale-100 flex items-center gap-1"
                                 >
-                                  <ExternalLink className="w-3.5 h-3.5" />
+                                  <ZoomIn className="w-3 h-3" />
+                                  View Receipt
                                 </button>
                               </div>
                             </div>

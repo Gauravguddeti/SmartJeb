@@ -1,21 +1,38 @@
-# 💰 PennyLog - AI-Assisted Expense Journal
+# 💰 SmartJeb - AI-Assisted Expense Tracker
 
 <div align="center">
-  <img src="./logo.svg" alt="PennyLog Logo" width="120" height="120">
-  <h3>✨ Smart expense tracking with AI-powered insights ✨</h3>
+  <img src="./logo.svg" alt="SmartJeb Logo" width="120" height="120">
+  <h3>✨ You buy. We judge. Gently. ✨</h3>
   
   ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-  ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+## � Mobile Apps
+
+SmartJeb is now available as native mobile apps for both Android and iOS platforms! The mobile apps provide the same seamless experience as the web version with the added benefits of native integration.
+
+### Android App
+- **[Download APK](https://example.com/smartjeb-latest.apk)** (Link to be updated upon app store approval)
+- Features full offline support
+- Fingerprint/biometric authentication
+- Notification support for reminders
+- Camera integration for receipt photos
+
+### iOS App
+- **[Download on App Store](https://example.com/smartjeb-ios)** (Link to be updated upon app store approval)
+- Apple Pay integration for transaction imports
+- iCloud backup support
+- Seamless sync with your iCloud account
+- Optimized for all iOS devices/img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
   ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
   ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
   ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+  ![Capacitor](https://img.shields.io/badge/Capacitor-119EFF?style=for-the-badge&logo=capacitor&logoColor=white)
 </div>
 
-## 🎯 What is PennyLog?
+## 🎯 What is SmartJeb?
 
-PennyLog is your **intelligent financial companion** that helps you track expenses with AI-powered insights and enterprise-level security! 💼 A modern, production-ready expense tracking application with seamless authentication, robust data management, and beautiful user experience.
+SmartJeb is your **intelligent financial companion** that helps you track expenses with AI-powered insights and enterprise-level security! 💼 A modern, production-ready expense tracking application with seamless authentication, robust data management, and beautiful user experience.
 
-### 🌟 Why PennyLog?
+### 🌟 Why SmartJeb?
 
 - **🔐 Enterprise Security** - Google OAuth, secure session management, and bulletproof authentication
 - **🤖 AI-Powered Smart Categorization** - Intelligent expense categorization with local AI
@@ -25,6 +42,7 @@ PennyLog is your **intelligent financial companion** that helps you track expens
 - **💬 AI Assistant** - Get comprehensive financial advice and smart tips
 - **📱 Mobile-First Design** - Responsive design that works perfectly on all devices
 - **🔄 Seamless Data Migration** - Guest data automatically migrates to authenticated accounts
+- **📲 Native Mobile Apps** - Available as both web and mobile applications
 
 ## ✨ Enterprise-Level Features
 
@@ -92,8 +110,80 @@ Open [http://localhost:5173](http://localhost:5173) and start tracking those exp
 ### Build for Production
 
 ```bash
+# Build for web
 npm run build
 npm run preview
+
+# Build for web and mobile
+npm run build-mobile
+```
+
+### Mobile App Builds
+
+SmartJeb is available as a mobile app for both Android and iOS platforms using Capacitor, which wraps our existing web app into native mobile applications. When you make changes to the GitHub repository, they will automatically be reflected in both the web version and mobile applications after rebuilding.
+
+#### Building and Updating the Mobile Apps
+
+The mobile apps are built from the same codebase as the web application, ensuring consistent behavior across all platforms. Here's the workflow to update both web and mobile versions:
+
+1. Make changes to the codebase
+2. Push changes to GitHub (web version will update automatically via CI/CD)
+3. Follow these steps to update mobile apps with your changes:
+
+#### Building for Android
+
+1. Build the web app:
+```bash
+npm run build
+```
+
+2. Sync web code to Android:
+```bash
+npx cap sync android
+```
+
+3. Open in Android Studio:
+```bash
+npx cap open android
+```
+
+4. Build the APK in Android Studio:
+   - Go to Build > Build Bundle(s) / APK(s) > Build APK(s)
+   - Find the APK in `android/app/build/outputs/apk/debug/`
+   - (Optional) Sign the APK for distribution
+
+#### Building for iOS
+
+1. Build the web app (if not already done):
+```bash
+npm run build
+```
+
+2. Sync web code to iOS:
+```bash
+npx cap sync ios
+```
+
+3. Open in Xcode:
+```bash
+npx cap open ios
+```
+
+4. Build the app in Xcode:
+   - Select a development team in the Signing & Capabilities tab
+   - Build the project using Product > Build
+   - Archive for distribution using Product > Archive
+
+#### Automated Build Script
+
+You can run the following script to build both web and mobile versions in one go:
+
+```bash
+# Add this to your package.json scripts
+# "build-mobile": "npm run build && npx cap sync"
+
+# Then run:
+npm run build-mobile
 ```
 
 ## 🛠️ Tech Stack
@@ -155,15 +245,41 @@ Your intelligent companion that:
 ```
 src/
 ├── components/          # React components
-│   ├── Dashboard.jsx   # Main dashboard
-│   ├── Analytics.jsx   # Charts and insights
-│   ├── Goals.jsx       # Goal tracking
-│   ├── AIChatbot.jsx   # Intelligent AI assistant
+│   ├── Dashboard.jsx    # Main dashboard
+│   ├── Analytics.jsx    # Charts and insights
+│   ├── Goals.jsx        # Goal tracking
+│   ├── AIChatbot.jsx    # Intelligent AI assistant
+│   ├── Navigation.jsx   # Bottom navigation bar
+│   ├── VideoModal.jsx   # Video tutorial modal
 │   └── ...
-├── context/            # React Context for state management
-├── services/           # Business logic and AI services
-├── utils/              # Helper functions
-└── styles/             # Global styles and Tailwind config
+├── context/             # React Context for state management
+│   ├── AuthContext.jsx  # Authentication state management
+│   ├── ExpenseContext.jsx # Expense data management
+│   └── GoalsContext.jsx # Goals state management
+├── services/            # Business logic and AI services
+│   ├── aiCategorization.js # AI-powered expense categorization
+│   └── database.js      # Data storage and retrieval
+├── utils/               # Helper functions
+│   └── formatters.js    # Data formatting utilities
+├── lib/                 # External libraries integration
+│   └── supabase.js      # Supabase client configuration
+├── assets/              # Static assets
+└── index.css            # Global styles and Tailwind config
+```
+
+### Mobile App Structure
+
+```
+android/                 # Android project files (after running npx cap add android)
+├── app/                 # Android app module
+│   └── src/             # Android source files
+│       └── main/        # Main Android app code
+│           └── assets/  # Web app build files
+│
+ios/                     # iOS project files (after running npx cap add ios)
+├── App/                 # iOS app module
+│   └── App/             # Main iOS app code
+│       └── public/      # Web app build files
 ```
 
 ## 🤝 Contributing
@@ -208,10 +324,34 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
   <p><strong>Made with ♥ and lots of coffee by Gaurav Guddeti</strong></p>
-  <p><em>Remember: You buy. We judge. Gently.</em> 😉</p>
+  <p><em>SmartJeb: You buy. We judge. Gently.</em> 😉</p>
 </div>
 
-## 🔒 Latest Security & Performance Enhancements (v2.0)
+## � Mobile Apps
+
+PennyLog is now available as native mobile apps for both Android and iOS platforms! The mobile apps provide the same seamless experience as the web version with the added benefits of native integration.
+
+### Android App
+- **[Download APK](https://example.com/pennylog-latest.apk)** (Link to be updated upon app store approval)
+- Features full offline support
+- Fingerprint/biometric authentication
+- Notification support for reminders
+- Camera integration for receipt photos
+
+### iOS App
+- **[Download on App Store](https://example.com/pennylog-ios)** (Link to be updated upon app store approval)
+- Apple Pay integration for transaction imports
+- iCloud backup support
+- Seamless sync with your iCloud account
+- Optimized for all iOS devices
+
+### Screenshots
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+  <img src="public/mobile-dark.png" alt="Mobile Dark Mode" width="200"/>
+  <img src="public/mobile-light.png" alt="Mobile Light Mode" width="200"/>
+</div>
+
+## �🔒 Latest Security & Performance Enhancements (v2.0)
 
 ### 🚀 **Major Authentication Overhaul**
 - **Fixed Google OAuth Auto-Login Issue** - Complete session cleanup ensures proper sign-out

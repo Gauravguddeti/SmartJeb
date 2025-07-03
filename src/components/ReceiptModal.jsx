@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ZoomIn, Download } from 'lucide-react';
+import { X, ZoomIn, Download, FileType } from 'lucide-react';
 
 /**
  * Receipt Modal Component for full-screen image viewing
@@ -8,28 +8,86 @@ import { X, ZoomIn, Download } from 'lucide-react';
 const ReceiptModal = ({ isOpen, onClose, receiptUrl, expenseDescription }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [processedUrl, setProcessedUrl] = useState('');
+  const imgRef = useRef(null);
+  
+  useEffect(() => {
+    console.log("ReceiptModal: receiptUrl received:", receiptUrl);
+    if (receiptUrl) {
+      // Reset states when a new URL comes in
+      setImageLoaded(false);
+      setImageError(false);
+      
+      // Handle different receipt URL formats
+      if (typeof receiptUrl === 'string') {
+        // Create a new image to check if the URL is valid
+        const img = new Image();
+        img.onload = () => {
+          setProcessedUrl(receiptUrl);
+          setImageLoaded(true);
+        };
+        img.onerror = () => {
+          console.error("Failed to load image from URL:", receiptUrl);
+          // Try to use as Data URL if it's a base64 string
+          if (receiptUrl.startsWith('data:')) {
+            setProcessedUrl(receiptUrl);
+          } else {
+            setImageError(true);
+          }
+        };
+        img.src = receiptUrl;
+      } else if (receiptUrl instanceof File) {
+        // If it's a File object, create an object URL
+        const objectUrl = URL.createObjectURL(receiptUrl);
+        setProcessedUrl(objectUrl);
+      } else {
+        console.error("Invalid receipt URL format:", receiptUrl);
+        setImageError(true);
+      }
+    }
+  }, [receiptUrl]);
 
   if (!isOpen || !receiptUrl) {
     return null;
   }
 
   const handleDownload = () => {
-    if (receiptUrl.startsWith('data:')) {
+    if (!processedUrl && receiptUrl) {
+      // If processedUrl is not available but receiptUrl is, try to use receiptUrl
+      setProcessedUrl(receiptUrl);
+    }
+    
+    const urlToUse = processedUrl || receiptUrl;
+    
+    if (urlToUse && urlToUse.startsWith('data:')) {
       // For data URLs, create a download link
       const link = document.createElement('a');
-      link.href = receiptUrl;
+      link.href = urlToUse;
       link.download = `receipt-${expenseDescription || 'expense'}.jpg`;
       link.click();
-    } else {
+    } else if (urlToUse) {
       // For regular URLs, open in new tab
-      window.open(receiptUrl, '_blank');
+      window.open(urlToUse, '_blank');
+    } else {
+      console.error("No valid URL available for download");
     }
   };
 
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      handleClose();
     }
+  };
+  
+  const handleClose = () => {
+    // Clean up any object URLs to prevent memory leaks
+    if (processedUrl && processedUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(processedUrl);
+    }
+    setImageLoaded(false);
+    setImageError(false);
+    setProcessedUrl('');
+    onClose();
   };
 
   const modalContent = (
@@ -80,7 +138,7 @@ const ReceiptModal = ({ isOpen, onClose, receiptUrl, expenseDescription }) => {
                 <Download className="w-5 h-5" />
               </button>
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="p-2 text-white hover:bg-white/20 rounded-lg transition-colors duration-200"
                 title="Close"
               >
@@ -99,17 +157,23 @@ const ReceiptModal = ({ isOpen, onClose, receiptUrl, expenseDescription }) => {
                   </div>
                 )}
                 <img
-                  src={receiptUrl}
+                  ref={imgRef}
+                  src={processedUrl}
                   alt={`Receipt for ${expenseDescription || 'expense'}`}
                   className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${
                     imageLoaded ? 'opacity-100' : 'opacity-0'
                   }`}
-                  onLoad={() => setImageLoaded(true)}
-                  onError={() => {
+                  onLoad={() => {
+                    console.log("Image loaded successfully in modal");
+                    setImageLoaded(true);
+                  }}
+                  onError={(e) => {
+                    console.error("Image failed to load in modal:", processedUrl);
                     setImageError(true);
                     setImageLoaded(true);
                   }}
-                  style={{ maxHeight: 'calc(100vh - 200px)' }}
+                  style={{ maxHeight: 'calc(100vh - 200px)', width: 'auto' }}
+                  crossOrigin="anonymous"
                 />
               </div>
             ) : (
@@ -146,6 +210,16 @@ const ReceiptModal = ({ isOpen, onClose, receiptUrl, expenseDescription }) => {
       </div>
     </div>
   );
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      // Clean up any object URLs when component unmounts
+      if (processedUrl && processedUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(processedUrl);
+      }
+    };
+  }, [processedUrl]);
 
   return createPortal(modalContent, document.body);
 };

@@ -221,7 +221,6 @@ const AppContent = () => {
           onGuestLogin={handleGuestLogin}
           onSuccess={handleAuthSuccess}
         />
-        />
       </>
     );
   }  return (

@@ -10,7 +10,8 @@ import {
   FileText,
   Eye,
   ZoomIn,
-  Camera
+  Camera,
+  ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useExpenses } from '../context/ExpenseContext';
@@ -43,6 +44,21 @@ const ExpenseList = ({ onAddExpense }) => {
   };
 
   const handleViewReceipt = (receiptUrl, expenseDescription) => {
+    console.log("handleViewReceipt called with:", receiptUrl?.substring(0, 50) + "...");
+    
+    if (!receiptUrl) {
+      console.error("Attempted to view receipt with no URL");
+      return;
+    }
+    
+    // For authenticated users, make sure the URL is properly formatted
+    if (receiptUrl && typeof receiptUrl === 'string' && !receiptUrl.startsWith('blob:') && !receiptUrl.startsWith('data:')) {
+      // If it's a URL that doesn't start with http/https, it might need additional processing
+      if (!receiptUrl.startsWith('http')) {
+        console.log("Receipt URL might need processing:", receiptUrl.substring(0, 50) + "...");
+      }
+    }
+    
     setSelectedReceipt({ url: receiptUrl, description: expenseDescription });
     setShowReceiptModal(true);
   };
@@ -227,21 +243,23 @@ const ExpenseList = ({ onAddExpense }) => {
                       <div className="relative group/receipt">
                         {(() => {
                           const receiptUrl = expense.receiptUrl || expense.receipt;
-                          console.log('Receipt URL for expense', expense.id, ':', receiptUrl);
+                          console.log('Receipt URL for expense', expense.id, ':', receiptUrl?.substring(0, 50) + '...');
                           return receiptUrl ? (
                             <div className="relative">
                               <img 
                                 src={receiptUrl} 
                                 alt="Receipt"
                                 className="w-full max-w-sm h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
-                                onClick={() => handleViewReceipt(receiptUrl, expense.description)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleViewReceipt(receiptUrl, expense.description);
+                                }}
                                 onError={(e) => {
-                                  console.error('Failed to load receipt image:', receiptUrl);
-                                  e.target.style.display = 'none';
-                                  const errorDiv = document.createElement('div');
-                                  errorDiv.className = 'w-full max-w-sm h-32 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-500';
-                                  errorDiv.innerHTML = '<span class="text-sm">Image not available</span>';
-                                  e.target.parentNode.appendChild(errorDiv);
+                                  console.error('Failed to load receipt thumbnail:', typeof receiptUrl);
+                                  // Don't hide the image element, show a placeholder instead
+                                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23cccccc' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'%3E%3C/circle%3E%3Cpolyline points='21 15 16 10 5 21'%3E%3C/polyline%3E%3C/svg%3E";
+                                  e.target.classList.add("p-4", "bg-gray-100", "dark:bg-gray-800");
                                 }}
                               />
                               <div className="absolute inset-0 bg-black/0 group-hover/receipt:bg-black/10 rounded-lg transition-all duration-200 flex items-center justify-center">
@@ -249,6 +267,20 @@ const ExpenseList = ({ onAddExpense }) => {
                                   <ZoomIn className="w-3 h-3" />
                                   Click to view full size
                                 </div>
+                              </div>
+                              <div className="absolute top-2 right-2 z-10">
+                                <button 
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    window.open(receiptUrl, '_blank');
+                                  }}
+                                  className="bg-white/80 dark:bg-gray-800/80 p-1.5 rounded-full text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700"
+                                  title="Open receipt in new tab"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </button>
                               </div>
                             </div>
                           ) : (

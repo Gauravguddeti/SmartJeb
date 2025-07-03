@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Mobile build files
+android/
+ios/
+*.apk
+*.aab
+*.ipa
+*.keystore
+*.jks
+build-android-apk.bat
+ANDROID_SETUP.md

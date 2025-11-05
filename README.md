@@ -4,30 +4,6 @@
   <img src="./logo.svg" alt="SmartJeb Logo" width="120" height="120">
   <h3>✨ You buy. We judge. Gently. ✨</h3>
   
-  ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-## � Mobile Apps
-
-SmartJeb is now available as native mobile apps for both Android and iOS platforms! The mobile apps provide the same seamless experience as the web version with the added benefits of native integration.
-
-### Android App
-- **[Download APK](https://example.com/smartjeb-latest.apk)** (Link to be updated upon app store approval)
-- Features full offline support
-- Fingerprint/biometric authentication
-- Notification support for reminders
-- Camera integration for receipt photos
-
-### iOS App
-- **[Download on App Store](https://example.com/smartjeb-ios)** (Link to be updated upon app store approval)
-- Apple Pay integration for transaction imports
-- iCloud backup support
-- Seamless sync with your iCloud account
-- Optimized for all iOS devices/img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-  ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-  ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-  ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-  ![Capacitor](https://img.shields.io/badge/Capacitor-119EFF?style=for-the-badge&logo=capacitor&logoColor=white)
-</div>
-
 ## 🎯 What is SmartJeb?
 
 SmartJeb is your **intelligent financial companion** that helps you track expenses with AI-powered insights and enterprise-level security! 💼 A modern, production-ready expense tracking application with seamless authentication, robust data management, and beautiful user experience.

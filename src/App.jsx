@@ -54,9 +54,12 @@ const AppContent = () => {
     if (!loading) {
       const hasVisited = localStorage.getItem('smartjeb-visited');
       const hasSeenWelcome = localStorage.getItem('smartjeb-welcome-seen');
+      const isGuestMode = localStorage.getItem('smartjeb-guest-mode') === 'true';
+      
+      console.log('App auth state:', { isAuthenticated, isGuest, isGuestMode, hasVisited });
       
       // If user is authenticated or in guest mode, skip landing page
-      if (isAuthenticated || isGuest) {
+      if (isAuthenticated || isGuest || isGuestMode) {
         setShowLanding(false);
         localStorage.setItem('smartjeb-visited', 'true');
         
@@ -65,7 +68,7 @@ const AppContent = () => {
           setShowWelcome(false);
         }
       } else {
-        // Not authenticated, show landing page
+        // Not authenticated and not guest, show landing page
         setShowLanding(true);
       }
     }
@@ -226,7 +229,7 @@ const AppContent = () => {
   }  return (
     <ExpenseProvider>
       <GoalsProvider>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 animate-fade-in transition-colors duration-300 flex flex-col pb-nav">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 animate-fade-in transition-colors duration-300 relative overflow-x-hidden">
           {/* Welcome Screen */}
           {showWelcome && (
             <Welcome 
@@ -281,7 +284,7 @@ const AppContent = () => {
           />
 
           {/* Main content - with extra bottom padding on mobile for the fixed navigation */}
-          <main className="container mx-auto px-4 py-6 pb-28 md:pb-6 flex-grow overflow-x-hidden" style={{ marginBottom: "70px" }}>
+          <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 overflow-x-hidden pb-24 md:pb-6">
             <div className="animate-slide-up max-w-full">
               {renderActiveComponent()}
             </div>

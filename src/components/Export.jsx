@@ -3,8 +3,9 @@ import { Download, Upload, FileText, Calendar, BarChart3, Share2, Smartphone } f
 import { useExpenses } from '../context/ExpenseContext';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency } from '../utils/formatters';
-import { format } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import toast from 'react-hot-toast';
+import MonthPicker from './MonthPicker';
 
 /**
  * Export Component - Export and share expense data
@@ -15,6 +16,8 @@ const Export = () => {
   const [exportType, setExportType] = useState('csv');
   const [dateRange, setDateRange] = useState('all');
   const [isExporting, setIsExporting] = useState(false);
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [customMonth, setCustomMonth] = useState(null);
 
   const generateCSV = (data) => {
     const headers = ['Date', 'Description', 'Category', 'Amount (₹)', 'Note', 'Receipt'];
@@ -70,6 +73,17 @@ const Export = () => {
       case 'month':
         const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         return expenses.filter(exp => new Date(exp.date) >= monthAgo);
+      case 'custom-month':
+        if (customMonth) {
+          const monthDate = new Date(customMonth);
+          const monthStart = startOfMonth(monthDate);
+          const monthEnd = endOfMonth(monthDate);
+          return expenses.filter(exp => {
+            const expDate = new Date(exp.date);
+            return expDate >= monthStart && expDate <= monthEnd;
+          });
+        }
+        return expenses;
       default:
         return expenses;
     }
@@ -342,17 +356,44 @@ const Export = () => {
           <div className="space-y-4">
             {/* Date Range Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time Period</label>
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              >
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="week">Last 7 Days</option>
-                <option value="month">Last 30 Days</option>
-              </select>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {dateRange === 'custom-month' && customMonth
+                  ? `Time Period: ${format(new Date(customMonth), 'MMMM yyyy')}`
+                  : 'Time Period'
+                }
+              </label>
+              <div className="flex gap-2">
+                <select
+                  value={dateRange === 'custom-month' && customMonth ? 'custom-month' : dateRange}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === 'custom-month') {
+                      setShowMonthPicker(true);
+                    } else {
+                      setDateRange(value);
+                      setCustomMonth(null);
+                    }
+                  }}
+                  className="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                >
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="week">Last 7 Days</option>
+                  <option value="month">Last 30 Days</option>
+                  <option value="custom-month">
+                    {customMonth ? format(new Date(customMonth), 'MMMM yyyy') : 'Custom Month...'}
+                  </option>
+                </select>
+                {dateRange === 'custom-month' && customMonth && (
+                  <button
+                    onClick={() => setShowMonthPicker(true)}
+                    className="px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+                    title="Change month"
+                  >
+                    <Calendar className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Export Format */}
@@ -472,6 +513,17 @@ const Export = () => {
           </div>
         </div>
       </div>
+
+      {/* Month Picker Modal */}
+      <MonthPicker
+        isOpen={showMonthPicker}
+        onClose={() => setShowMonthPicker(false)}
+        onSelectMonth={(monthDate) => {
+          setCustomMonth(monthDate);
+          setDateRange('custom-month');
+        }}
+        selectedMonth={customMonth}
+      />
     </div>
   );
 };

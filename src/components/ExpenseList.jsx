@@ -19,6 +19,7 @@ import { EXPENSE_CATEGORIES } from '../services/database';
 import { formatCurrency } from '../utils/formatters';
 import ExpenseForm from './ExpenseForm';
 import ReceiptModal from './ReceiptModal';
+import MonthPicker from './MonthPicker';
 
 /**
  * ExpenseList Component - Display and manage expenses
@@ -36,6 +37,7 @@ const ExpenseList = ({ onAddExpense }) => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
 
   const handleDeleteExpense = async (id) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
@@ -68,6 +70,24 @@ const ExpenseList = ({ onAddExpense }) => {
     }, 300);
   };
 
+  const handleMonthSelect = (monthDate) => {
+    updateFilters({ 
+      dateRange: 'specific-month',
+      specificMonth: monthDate 
+    });
+  };
+
+  const handleDateRangeChange = (value) => {
+    if (value === 'custom-month') {
+      setShowMonthPicker(true);
+    } else {
+      updateFilters({ 
+        dateRange: value,
+        specificMonth: null 
+      });
+    }
+  };
+
   const getCategoryColor = (category) => {
     const colors = {
       'Food & Dining': 'bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 border border-orange-200',
@@ -80,6 +100,7 @@ const ExpenseList = ({ onAddExpense }) => {
       'Travel': 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border border-green-200',
       'Groceries': 'bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-800 border border-emerald-200',
       'Personal Care': 'bg-gradient-to-r from-violet-100 to-violet-200 text-violet-800 border border-violet-200',
+      'Household': 'bg-gradient-to-r from-teal-100 to-teal-200 text-teal-800 border border-teal-200',
       'Other': 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-200'
     };
     return colors[category] || colors['Other'];
@@ -87,28 +108,28 @@ const ExpenseList = ({ onAddExpense }) => {
 
   return (
     <>
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-4 sm:space-y-8 animate-fade-in pb-4">
       {/* Header and Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 animate-slide-up">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 animate-slide-up">
         <div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 dark:from-gray-100 to-primary-600 bg-clip-text text-transparent">
+          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 dark:from-gray-100 to-primary-600 bg-clip-text text-transparent">
             Your Expenses
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 font-medium mt-1">Track and manage your daily expenses</p>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 font-medium mt-1">Track and manage your daily expenses</p>
         </div>
         
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="bg-white/80 backdrop-blur-sm border border-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:bg-gray-50 hover:shadow-lg transform hover:scale-105 active:scale-95 flex items-center gap-2"
+            className="bg-white dark:bg-gray-800 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold py-2.5 px-4 sm:py-3 sm:px-6 rounded-xl transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-lg transform hover:scale-105 active:scale-95 flex items-center gap-2 text-sm sm:text-base"
           >
             <Filter className="w-4 h-4" />
-            Filters
+            <span className="hidden sm:inline">Filters</span>
           </button>
           
           <button
             onClick={onAddExpense}
-            className="bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:from-primary-600 hover:to-primary-700 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center gap-2 animate-glow"
+            className="bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold py-2.5 px-4 sm:py-3 sm:px-6 rounded-xl transition-all duration-300 hover:from-primary-600 hover:to-primary-700 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center gap-2 animate-glow text-sm sm:text-base"
           >
             <Plus className="w-4 h-4" />
             Add Expense
@@ -118,8 +139,8 @@ const ExpenseList = ({ onAddExpense }) => {
 
       {/* Filters */}
       {showFilters && (
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6 space-y-6 animate-slide-down">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white dark:bg-gray-800 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 space-y-4 sm:space-y-6 animate-slide-down">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {/* Search */}
             <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -159,18 +180,33 @@ const ExpenseList = ({ onAddExpense }) => {
             {/* Date Range */}
             <div className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Date Range
+                {filter.dateRange === 'specific-month' && filter.specificMonth 
+                  ? `Selected: ${format(new Date(filter.specificMonth), 'MMMM yyyy')}`
+                  : 'Date Range'
+                }
               </label>
-              <select
-                value={filter.dateRange}
-                onChange={(e) => updateFilters({ dateRange: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100"
-              >
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-              </select>
+              <div className="flex gap-2">
+                <select
+                  value={filter.dateRange === 'specific-month' ? 'custom-month' : filter.dateRange}
+                  onChange={(e) => handleDateRangeChange(e.target.value)}
+                  className="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100"
+                >
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                  <option value="custom-month">Custom Month...</option>
+                </select>
+                {filter.dateRange === 'specific-month' && (
+                  <button
+                    onClick={() => setShowMonthPicker(true)}
+                    className="px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+                    title="Change month"
+                  >
+                    <Calendar className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -206,32 +242,32 @@ const ExpenseList = ({ onAddExpense }) => {
           filteredExpenses.map((expense, index) => (
             <div 
               key={expense.id} 
-              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-200/50 hover:scale-[1.02] animate-slide-up group"
+              className="bg-white dark:bg-gray-800 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:scale-[1.02] animate-slide-up group"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <h3 className="font-bold text-gray-900 text-lg group-hover:text-primary-600 transition-colors">{expense.description}</h3>
-                    <span className={`px-3 py-1 rounded-xl text-xs font-semibold ${getCategoryColor(expense.category)} shadow-sm`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                    <h3 className="font-bold text-gray-900 dark:text-gray-100 text-base sm:text-lg group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors break-words">{expense.description}</h3>
+                    <span className={`px-2 sm:px-3 py-1 rounded-xl text-[10px] sm:text-xs font-semibold ${getCategoryColor(expense.category)} shadow-sm whitespace-nowrap`}>
                       {expense.category}
                     </span>
                   </div>
                   
-                  <div className="flex items-center gap-6 text-sm text-gray-600 mb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-2 sm:mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="bg-primary-100 p-1 rounded-lg">
-                        <Calendar className="w-4 h-4 text-primary-600" />
+                      <div className="bg-primary-100 dark:bg-primary-900/30 p-1 rounded-lg">
+                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-primary-600 dark:text-primary-400" />
                       </div>
                       <span className="font-medium">{format(new Date(expense.date), 'MMM dd, yyyy')}</span>
                     </div>
-                    <div className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
+                    <div className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
                       {formatCurrency(expense.amount)}
                     </div>
                   </div>
 
                   {expense.note && (
-                    <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3 mb-3 border-l-4 border-primary-200">{expense.note}</p>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2 sm:p-3 mb-2 sm:mb-3 border-l-4 border-primary-200 dark:border-primary-700">{expense.note}</p>
                   )}
 
                   {(expense.receiptUrl || expense.receipt) && (
@@ -325,6 +361,14 @@ const ExpenseList = ({ onAddExpense }) => {
       onClose={handleCloseReceiptModal}
       receiptUrl={selectedReceipt?.url}
       expenseDescription={selectedReceipt?.description}
+    />
+
+    {/* Month Picker Modal */}
+    <MonthPicker
+      isOpen={showMonthPicker}
+      onClose={() => setShowMonthPicker(false)}
+      onSelectMonth={handleMonthSelect}
+      selectedMonth={filter.specificMonth}
     />
     </>
   );

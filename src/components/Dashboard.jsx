@@ -81,6 +81,7 @@ const Dashboard = () => {
       'Travel': 'bg-green-100 text-green-800',
       'Groceries': 'bg-emerald-100 text-emerald-800',
       'Personal Care': 'bg-violet-100 text-violet-800',
+      'Household': 'bg-teal-100 text-teal-800',
       'Other': 'bg-gray-100 text-gray-800'
     };
     return colors[category] || colors['Other'];

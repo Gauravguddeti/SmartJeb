@@ -34,34 +34,17 @@ const VideoModal = ({ isOpen, onClose, videoSrc, menuPosition }) => {
         onClick={onClose}
       />
       
-      {/* Pointer line to hamburger menu */}
+      {/* Video container - animates from hamburger menu position */}
       <div 
-        className="absolute z-[62] transition-all duration-500 ease-in-out origin-top-right"
+        className="relative w-full max-w-xs mx-4 rounded-xl overflow-hidden shadow-2xl z-[61] transition-all duration-500 ease-out"
         style={{ 
-          top: `${menuPosition?.top || 16}px`,
-          right: `${menuPosition?.right || 16}px`,
           opacity: animate ? 1 : 0,
-          transform: animate ? 'scale(1)' : 'scale(0.5)'
-        }}
-      >
-        <svg width="60" height="30" viewBox="0 0 60 30" className="filter drop-shadow-lg">
-          <path 
-            d="M0,0 Q30,30 60,5" 
-            stroke="#FF5757" 
-            strokeWidth="3" 
-            fill="none" 
-            strokeLinecap="round"
-            className="animate-pulse-gentle"
-          />
-        </svg>
-      </div>
-      
-      {/* Video container */}
-      <div 
-        className="relative w-full max-w-xs mx-auto mt-24 rounded-xl overflow-hidden shadow-2xl z-[61] transition-all duration-500 ease-in-out"
-        style={{ 
-          opacity: animate ? 1 : 0, 
-          transform: animate ? 'translateY(0) scale(1)' : 'translateY(-20px) scale(0.95)'
+          top: animate ? '6rem' : `${menuPosition?.top || 16}px`,
+          right: animate ? 'auto' : `${menuPosition?.right || 16}px`,
+          transform: animate 
+            ? 'translate(0, 0) scale(1)' 
+            : `translate(${(menuPosition?.right || 16) - 20}px, ${(menuPosition?.top || 16) - 100}px) scale(0.1)`,
+          transformOrigin: 'top right'
         }}
       >
         {/* Close button */}

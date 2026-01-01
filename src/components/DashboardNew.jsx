@@ -89,6 +89,7 @@ const Dashboard = () => {
       'Travel': 'bg-green-100 text-green-800',
       'Groceries': 'bg-emerald-100 text-emerald-800',
       'Personal Care': 'bg-violet-100 text-violet-800',
+      'Household': 'bg-teal-100 text-teal-800',
       'Other': 'bg-gray-100 text-gray-800'
     };
     return colors[category] || colors['Other'];
@@ -106,13 +107,13 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-4 sm:space-y-8 animate-fade-in pb-4">
       {/* Header */}
       <div className="animate-slide-up">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 dark:from-gray-100 to-primary-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 dark:from-gray-100 to-primary-600 bg-clip-text text-transparent">
           Dashboard
         </h2>
-        <p className="text-gray-600 dark:text-gray-300 font-medium mt-1">Your expense overview and insights</p>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 font-medium mt-1">Your expense overview and insights</p>
       </div>
 
       {/* Quick Stats Widget */}
@@ -121,42 +122,42 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card p-6 hover:scale-105 animate-slide-up group" style={{ animationDelay: '0.1s' }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="card p-4 sm:p-6 hover:scale-105 animate-slide-up group" style={{ animationDelay: '0.1s' }}>
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Today</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{formatCurrency(todayTotal)}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">Today's expenses</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Today</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 truncate">{formatCurrency(todayTotal)}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">Today's expenses</p>
             </div>
-            <div className="bg-gradient-to-br from-primary-100 to-primary-200 p-3 rounded-xl group-hover:scale-110 transition-transform duration-300">
-              <Calendar className="w-6 h-6 text-primary-600" />
+            <div className="bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/50 dark:to-primary-800/50 p-2 sm:p-3 rounded-xl group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600 dark:text-primary-400" />
             </div>
           </div>
         </div>
 
-        <div className="card p-6 hover:scale-105 animate-slide-up group" style={{ animationDelay: '0.2s' }}>
+        <div className="card p-4 sm:p-6 hover:scale-105 animate-slide-up group" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">This Month</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{formatCurrency(monthlyTotal)}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">Monthly total</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">This Month</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 truncate">{formatCurrency(monthlyTotal)}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">Monthly total</p>
             </div>
-            <div className="bg-gradient-to-br from-success-100 to-success-200 p-3 rounded-xl group-hover:scale-110 transition-transform duration-300">
-              <DollarSign className="w-6 h-6 text-success-600" />
+            <div className="bg-gradient-to-br from-success-100 to-success-200 dark:from-success-900/50 dark:to-success-800/50 p-2 sm:p-3 rounded-xl group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-success-600 dark:text-success-400" />
             </div>
           </div>
         </div>
 
-        <div className="card p-6 hover:scale-105 animate-slide-up group" style={{ animationDelay: '0.3s' }}>
+        <div className="card p-4 sm:p-6 hover:scale-105 animate-slide-up group" style={{ animationDelay: '0.3s' }}>
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Daily Average</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{formatCurrency(insights.averagePerDay)}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">Average per day</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Daily Average</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 truncate">{formatCurrency(insights.averagePerDay)}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">Average per day</p>
             </div>
-            <div className="bg-gradient-to-br from-warning-100 to-warning-200 p-3 rounded-xl group-hover:scale-110 transition-transform duration-300">
-              <Target className="w-6 h-6 text-warning-600" />
+            <div className="bg-gradient-to-br from-warning-100 to-warning-200 dark:from-warning-900/50 dark:to-warning-800/50 p-2 sm:p-3 rounded-xl group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+              <Target className="w-5 h-5 sm:w-6 sm:h-6 text-warning-600 dark:text-warning-400" />
             </div>
           </div>
         </div>

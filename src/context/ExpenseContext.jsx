@@ -3,6 +3,7 @@ import { categorizeExpense, trainCategorization } from '../services/aiService.js
 import { useAuth } from './AuthContext';
 import { supabase, TABLES, isSupabaseConfigured } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { startOfMonth, endOfMonth, isSameMonth } from 'date-fns';
 
 const ExpenseContext = createContext();
 
@@ -26,7 +27,8 @@ const initialState = {
   filter: {
     category: 'all',
     dateRange: 'all',
-    searchTerm: ''
+    searchTerm: '',
+    specificMonth: null
   },
   expensesLoaded: false // Add this flag to track if expenses have been loaded
 };
@@ -70,11 +72,21 @@ const applyFilters = (expenses, filter) => {
         });
         break;
       case 'month':
-        const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const monthStart = startOfMonth(today);
+        const monthEnd = endOfMonth(today);
         filtered = filtered.filter(expense => {
           const expenseDate = new Date(expense.date);
-          return expenseDate >= monthAgo;
+          return expenseDate >= monthStart && expenseDate <= monthEnd;
         });
+        break;
+      case 'specific-month':
+        if (filter.specificMonth) {
+          const specificMonthDate = new Date(filter.specificMonth);
+          filtered = filtered.filter(expense => {
+            const expenseDate = new Date(expense.date);
+            return isSameMonth(expenseDate, specificMonthDate);
+          });
+        }
         break;
       default:
         break;

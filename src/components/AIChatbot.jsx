@@ -5,8 +5,9 @@ import { MessageCircle, X, Send, Sparkles, Bot, User } from 'lucide-react';
  * AI Chatbot Component - Gen Z Financial Assistant
  */
 const AIChatbot = () => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(true);
   const [conversationContext, setConversationContext] = useState({
     lastTopic: null,
     waitingForGoal: false,
@@ -332,20 +333,56 @@ const AIChatbot = () => {
 
   if (!isOpen) {
     return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 md:bottom-6 md:right-6 mb-16 md:mb-0 bg-gradient-to-r from-primary-500 to-primary-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-50 animate-pulse"
-      >
-        <MessageCircle className="w-6 h-6" />
-      </button>
+      <div className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50">
+        {/* Tooltip notification */}
+        {showTooltip && (
+          <div className="absolute bottom-full right-0 mb-2 animate-slide-up">
+            <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-primary-200 dark:border-primary-700 p-3 max-w-xs">
+              <button
+                onClick={() => setShowTooltip(false)}
+                className="absolute top-1 right-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-3 h-3" />
+              </button>
+              <div className="flex items-start gap-2 pr-4">
+                <Sparkles className="w-4 h-4 text-primary-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                    Hey! This is SmartJeb AI Assistant 🤖
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    Click here to chat about budgeting, savings, or just have a friendly conversation!
+                  </p>
+                </div>
+              </div>
+              {/* Arrow pointing down */}
+              <div className="absolute -bottom-2 right-4 w-4 h-4 bg-white dark:bg-gray-800 border-r border-b border-primary-200 dark:border-primary-700 transform rotate-45"></div>
+            </div>
+          </div>
+        )}
+        
+        {/* Chat button */}
+        <button
+          onClick={() => {
+            setIsOpen(true);
+            setShowTooltip(false);
+          }}
+          className="bg-gradient-to-r from-primary-500 to-primary-600 text-white p-3 md:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 animate-pulse relative group"
+        >
+          <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
+          {/* Notification badge */}
+          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></span>
+          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+        </button>
+      </div>
     );
   }
 
   return (
     <div className={`fixed transition-all duration-300 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col z-50 animate-slide-up ${
       isExpanded 
-        ? 'bottom-6 right-6 left-6 top-6 md:left-1/4' 
-        : 'bottom-6 right-6 w-96 h-[500px] mb-16 md:mb-0'
+        ? 'bottom-2 right-2 left-2 top-2 md:bottom-6 md:right-6 md:left-1/4 md:top-6' 
+        : 'bottom-24 right-4 w-[calc(100vw-2rem)] max-w-96 h-[min(500px,calc(100vh-200px))] md:bottom-6 md:right-6 md:w-96 md:h-[500px]'
     }`}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary-500 to-primary-600 rounded-t-2xl">

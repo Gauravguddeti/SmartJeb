@@ -191,12 +191,13 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-1 sm:p-4 z-50 animate-fade-in"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-1 sm:p-4 animate-fade-in overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="expense-form-title"
+      style={{ zIndex: 10000 }}
     >
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[98vw] sm:max-w-md max-h-[98vh] overflow-hidden flex flex-col animate-slide-up transform hover:shadow-3xl transition-shadow duration-300">
+      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[98vw] sm:max-w-md max-h-[95vh] overflow-hidden flex flex-col animate-slide-up transform hover:shadow-3xl transition-shadow duration-300 my-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-100 bg-gradient-to-r from-primary-50 to-indigo-50 flex-shrink-0">
           <h2 
@@ -251,8 +252,8 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
         )}
 
         {/* Form - Scrollable Content */}
-        <div className="flex-1 overflow-y-auto">
-          <form onSubmit={handleSubmit} className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+        <div className="flex-1 overflow-y-auto overscroll-contain" style={{ maxHeight: "calc(85vh - 140px)" }}>
+          <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 pb-6">
             {/* Amount Field */}
             <div className="space-y-1 sm:space-y-2 animate-slide-up" style={{ animationDelay: '0.1s' }}>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -360,7 +361,6 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
                   name="date"
                   value={formData.date}
                   onChange={handleInputChange}
-                  max={format(new Date(), 'yyyy-MM-dd')}
                   className="w-full pl-8 sm:pl-10 pr-3 py-2 sm:py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 />
                 {formData.date === format(new Date(), 'yyyy-MM-dd') && (
@@ -435,18 +435,18 @@ const ExpenseForm = ({ expense = null, onClose, onSuccess }) => {
             </div>
 
             {/* Submit Buttons */}
-            <div className="flex space-x-2 pt-2 animate-slide-up" style={{ animationDelay: '0.7s' }}>
+            <div className="flex gap-3 pt-4 pb-2 animate-slide-up sticky bottom-0 bg-white dark:bg-gray-800 -mx-4 sm:-mx-5 px-4 sm:px-5 border-t border-gray-100 dark:border-gray-700" style={{ animationDelay: '0.7s' }}>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 sm:py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-300 hover:scale-105 active:scale-95 font-medium text-sm"
+                className="flex-1 px-4 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-[1.02] active:scale-95 font-semibold text-sm"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || !formData.amount || !formData.description}
-                className="flex-1 px-4 py-2 sm:py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 active:scale-95 disabled:hover:scale-100 font-medium shadow-lg hover:shadow-xl text-sm"
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:hover:scale-100 font-semibold shadow-lg hover:shadow-xl text-sm"
               >
                 {isSubmitting ? (
                   <div className="flex items-center justify-center space-x-2">

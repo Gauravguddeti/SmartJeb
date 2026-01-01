@@ -14,9 +14,10 @@ import {
   Line
 } from 'recharts';
 import { Calendar, TrendingUp, Filter } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, subDays } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, subDays, subMonths } from 'date-fns';
 import { useExpenses } from '../context/ExpenseContext';
 import { EXPENSE_CATEGORIES } from '../services/database';
+import MonthPicker from './MonthPicker';
 
 /**
  * Analytics Component - Visual charts and data analysis
@@ -24,6 +25,8 @@ import { EXPENSE_CATEGORIES } from '../services/database';
 const Analytics = () => {
   const { expenses, getExpensesInRange } = useExpenses();
   const [timeRange, setTimeRange] = useState('month');
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [customMonth, setCustomMonth] = useState(null);
   const [chartData, setChartData] = useState({
     categoryData: [],
     dailyData: [],
@@ -34,7 +37,7 @@ const Analytics = () => {
 
   useEffect(() => {
     generateChartData();
-  }, [expenses, timeRange]);
+  }, [expenses, timeRange, customMonth]);
 
   const generateChartData = async () => {
     const today = new Date();
@@ -53,6 +56,16 @@ const Analytics = () => {
       case 'quarter':
         startDate = new Date(today.getFullYear(), today.getMonth() - 3, 1);
         endDate = today;
+        break;
+      case 'custom-month':
+        if (customMonth) {
+          const monthDate = new Date(customMonth);
+          startDate = startOfMonth(monthDate);
+          endDate = endOfMonth(monthDate);
+        } else {
+          startDate = startOfMonth(today);
+          endDate = endOfMonth(today);
+        }
         break;
       default:
         startDate = startOfMonth(today);
@@ -122,62 +135,82 @@ const Analytics = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 pb-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Analytics</h2>
-          <p className="text-gray-600 dark:text-gray-400">Visual insights into your spending patterns</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">Analytics</h2>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Visual insights into your spending patterns</p>
         </div>
         
         {/* Time Range Selector */}
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           <select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
-            className="input-field"
+            value={timeRange === 'custom-month' && customMonth ? 'custom-month' : timeRange}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === 'custom-month') {
+                setShowMonthPicker(true);
+              } else {
+                setTimeRange(value);
+                setCustomMonth(null);
+              }
+            }}
+            className="input-field text-sm sm:text-base"
           >
             <option value="week">Last 7 Days</option>
             <option value="month">This Month</option>
             <option value="quarter">Last 3 Months</option>
+            <option value="custom-month">
+              {customMonth ? format(new Date(customMonth), 'MMMM yyyy') : 'Custom Month...'}
+            </option>
           </select>
+          {timeRange === 'custom-month' && customMonth && (
+            <button
+              onClick={() => setShowMonthPicker(true)}
+              className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+              title="Change month"
+            >
+              <Calendar className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="card p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Spent</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">₹{getTotalAmount().toFixed(2)}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Total Spent</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 truncate">₹{getTotalAmount().toFixed(2)}</p>
             </div>
-            <div className="bg-primary-100 dark:bg-primary-900/50 p-3 rounded-full">
-              <TrendingUp className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+            <div className="bg-primary-100 dark:bg-primary-900/50 p-2 sm:p-3 rounded-full flex-shrink-0">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600 dark:text-primary-400" />
             </div>
           </div>
         </div>
 
-        <div className="card p-6">
+        <div className="card p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Top Category</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{getTopCategory()}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Top Category</p>
+              <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 truncate">{getTopCategory()}</p>
             </div>
-            <div className="bg-success-100 dark:bg-success-900/50 p-3 rounded-full">
-              <Calendar className="w-6 h-6 text-success-600 dark:text-success-400" />
+            <div className="bg-success-100 dark:bg-success-900/50 p-2 sm:p-3 rounded-full flex-shrink-0">
+              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-success-600 dark:text-success-400" />
             </div>
           </div>
         </div>
 
-        <div className="card p-6">
+        <div className="card p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Categories</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{chartData.categoryData.length}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Categories</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{chartData.categoryData.length}</p>
             </div>
-            <div className="bg-warning-100 dark:bg-warning-900/50 p-3 rounded-full">
+            <div className="bg-warning-100 dark:bg-warning-900/50 p-2 sm:p-3 rounded-full flex-shrink-0">
               <PieChart className="w-6 h-6 text-warning-600 dark:text-warning-400" />
             </div>
           </div>
@@ -293,6 +326,17 @@ const Analytics = () => {
           })}
         </div>
       </div>
+
+      {/* Month Picker Modal */}
+      <MonthPicker
+        isOpen={showMonthPicker}
+        onClose={() => setShowMonthPicker(false)}
+        onSelectMonth={(monthDate) => {
+          setCustomMonth(monthDate);
+          setTimeRange('custom-month');
+        }}
+        selectedMonth={customMonth}
+      />
     </div>
   );
 };

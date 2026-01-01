@@ -15,12 +15,20 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [isGuest, setIsGuest] = useState(false)
+  const [isGuest, setIsGuest] = useState(() => {
+    // Initialize from localStorage to persist guest mode across refreshes
+    return localStorage.getItem('smartjeb-guest-mode') === 'true'
+  })
 
   useEffect(() => {
     // Only initialize auth if Supabase is configured
     if (!isSupabaseConfigured || !supabase) {
       console.warn('Supabase not configured. Authentication will be limited to guest mode.')
+      // Check if user was in guest mode
+      const wasGuestMode = localStorage.getItem('smartjeb-guest-mode') === 'true'
+      if (wasGuestMode) {
+        setIsGuest(true)
+      }
       setLoading(false)
       return
     }
@@ -30,6 +38,16 @@ export const AuthProvider = ({ children }) => {
     // Get initial session
     const getInitialSession = async () => {
       try {
+        // Check for guest mode first
+        const isGuestMode = localStorage.getItem('smartjeb-guest-mode') === 'true'
+        if (isGuestMode && isMounted) {
+          console.log('Guest mode detected from localStorage')
+          setIsGuest(true)
+          setUser(null)
+          setLoading(false)
+          return
+        }
+        
         const { data: { session } } = await supabase.auth.getSession()
         if (isMounted) {
           setUser(session?.user ?? null)
@@ -197,6 +215,7 @@ export const AuthProvider = ({ children }) => {
       // For local-only mode, just clear the state
       setUser(null)
       setIsGuest(false)
+      localStorage.removeItem('smartjeb-guest-mode')
       // Clear app state flags but keep welcome for guest->auth users
       localStorage.removeItem('smartjeb-visited')
       // Keep welcome-seen flag so users don't see onboarding again
@@ -225,6 +244,7 @@ export const AuthProvider = ({ children }) => {
       // Always clear local state regardless of Supabase response
       setUser(null)
       setIsGuest(false)
+      localStorage.removeItem('smartjeb-guest-mode')
       
       // Clear app state data but keep welcome/onboarding flags per user
       localStorage.removeItem('smartjeb-visited')
@@ -285,11 +305,16 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
     setIsGuest(true)
     setLoading(false)
+    // Persist guest mode state across refreshes
+    localStorage.setItem('smartjeb-guest-mode', 'true')
+    localStorage.setItem('smartjeb-visited', 'true')
   }
 
   // Exit guest mode
   const exitGuestMode = () => {
     setIsGuest(false)
+    // Clear guest mode state from localStorage
+    localStorage.removeItem('smartjeb-guest-mode')
     // Clear any guest data from sessionStorage (guest mode uses sessionStorage)
     sessionStorage.removeItem('smartjeb-guest-expenses')
     sessionStorage.removeItem('smartjeb-guest-goals')

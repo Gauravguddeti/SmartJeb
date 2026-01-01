@@ -12,6 +12,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/app": "^6.0.1",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/haptics": "^6.0.1",
+    "@capacitor/local-notifications": "^6.1.0",
+    "@capacitor/push-notifications": "^6.0.2",
+    "@capacitor/status-bar": "^6.0.1",
     "@supabase/supabase-js": "^2.40.1",
     "@tensorflow/tfjs": "^4.17.0",
     "date-fns": "^3.0.0",
@@ -24,6 +31,7 @@
     "recharts": "^2.10.3"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.1.2",
     "@tailwindcss/forms": "^0.5.7",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",

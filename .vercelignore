@@ -1,0 +1,27 @@
+# Mobile app folder (React Native/Expo)
+mobile-app/
+
+# Web backup folder
+web-backup/
+
+# Video files
+*.mp4
+*.mov
+*.avi
+
+# Local environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# SQL files
+*.sql
+
+# Documentation
+*.md
+!README.md
+
+# Test files
+test-*.js
+test-*.csv

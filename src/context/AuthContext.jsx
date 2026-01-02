@@ -1,6 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import toast from 'react-hot-toast'
+import { App } from '@capacitor/app'
+
+// Check if running on Capacitor (mobile app)
+const isCapacitorApp = () => {
+  try {
+    return window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+  } catch {
+    return false;
+  }
+};
 
 const AuthContext = createContext({})
 
@@ -145,6 +155,101 @@ export const AuthProvider = ({ children }) => {
     }
   }, [])
 
+  // Handle deep links for OAuth callback on mobile
+  useEffect(() => {
+    if (!isCapacitorApp() || !isSupabaseConfigured || !supabase) return;
+
+    let appUrlListener = null;
+
+    const setupDeepLinkListener = async () => {
+      try {
+        // Handle deep links when app is opened from a URL
+        appUrlListener = await App.addListener('appUrlOpen', async (event) => {
+          console.log('🔗 Deep link received:', event.url);
+          
+          // Check if this is an OAuth callback from HTTPS App Link
+          if (event.url && (event.url.includes('auth.smartjeb.app/callback') || event.url.includes('smartjeb.vercel.app/callback'))) {
+            try {
+              console.log('🔐 Processing HTTPS App Link OAuth callback...');
+              
+              // Supabase OAuth tokens can be in hash (#) or query (?)
+              let tokenString = '';
+              if (event.url.includes('#')) {
+                tokenString = event.url.split('#')[1];
+              } else if (event.url.includes('?')) {
+                // Get everything after the first ?
+                const parts = event.url.split('?');
+                if (parts.length > 1) {
+                  tokenString = parts.slice(1).join('?');
+                }
+              }
+              
+              console.log('🔍 Token string:', tokenString ? 'Found' : 'Not found');
+              
+              if (!tokenString) {
+                console.error('❌ No token string found in OAuth callback URL');
+                toast.error('OAuth callback failed - no tokens');
+                return;
+              }
+              
+              const urlParams = new URLSearchParams(tokenString);
+              const accessToken = urlParams.get('access_token');
+              const refreshToken = urlParams.get('refresh_token');
+              const errorParam = urlParams.get('error');
+              const errorDescription = urlParams.get('error_description');
+              
+              if (errorParam) {
+                console.error('❌ OAuth error:', errorParam, errorDescription);
+                toast.error(`Sign in failed: ${errorDescription || errorParam}`);
+                return;
+              }
+              
+              if (!accessToken) {
+                console.error('❌ No access token found in OAuth callback');
+                toast.error('OAuth callback failed - no access token');
+                return;
+              }
+              
+              console.log('✅ Tokens found, setting session...');
+              
+              // Set session with validated tokens
+              const { data, error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken || undefined
+              });
+              
+              if (error) {
+                console.error('❌ OAuth session error:', error);
+                toast.error('Failed to sign in with Google');
+              } else if (data?.session) {
+                console.log('✅ OAuth session established successfully');
+                toast.success('Signed in with Google!');
+                // The onAuthStateChange listener will handle the UI update
+              }
+            } catch (error) {
+              console.error('❌ Error processing OAuth callback:', error);
+              toast.error('Sign in failed');
+            }
+          } else {
+            console.log('ℹ️ Deep link is not an OAuth callback:', event.url);
+          }
+        });
+
+        console.log('✅ Deep link listener registered successfully');
+      } catch (error) {
+        console.error('❌ Error setting up deep link listener:', error);
+      }
+    };
+
+    setupDeepLinkListener();
+
+    return () => {
+      if (appUrlListener) {
+        appUrlListener.remove();
+      }
+    };
+  }, [isSupabaseConfigured, supabase]);
+
   // Sign in with email and password
   const signInWithEmail = async (email, password) => {
     if (!isSupabaseConfigured || !supabase) {
@@ -191,18 +296,27 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
+      // For Capacitor apps, use HTTPS App Link (production-grade approach)
+      const redirectTo = isCapacitorApp() 
+        ? 'https://auth.smartjeb.app/callback'
+        : `${window.location.origin}/`;
+
+      console.log('OAuth redirect URL:', redirectTo);
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: redirectTo,
           queryParams: {
             prompt: 'select_account',
             access_type: 'offline'
           },
-          skipBrowserRedirect: false
+          skipBrowserRedirect: false // Let Supabase handle browser opening
         }
       })
+
       if (error) throw error
+
       return { error: null }
     } catch (error) {
       return { error: error.message }

@@ -4,9 +4,6 @@ const config: CapacitorConfig = {
   appId: 'com.smartjeb.expensekeeper',
   appName: 'SmartJeb',
   webDir: 'dist',
-  server: {
-    androidScheme: 'https'
-  },
   plugins: {
     LocalNotifications: {
       smallIcon: "ic_stat_icon_config_sample",

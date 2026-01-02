@@ -32,4 +32,13 @@ ios/
 *.keystore
 *.jks
 build-android-apk.bat
-ANDROID_SETUP.md
+
+# Temp files
+.gradle-temp/
+errorlogs.txt
+src/App-minimal.jsx
+
+# Diagnostic/setup docs (optional, comment out if you want to keep these)
+ANDROID_OAUTH_FIX.md
+OAUTH_DEEP_LINK_DIAGNOSTIC_REPORT.md
+mobile-app/OAUTH_SETUP_GUIDE.md

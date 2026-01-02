@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.smartjeb.expensekeeper",
+    "sha256_cert_fingerprints": [
+      "18:25:0B:F8:1E:93:2F:E5:F3:1F:A0:6F:D8:08:17:78:9E:1E:74:B9:A3:BB:D3:91:FC:0A:E7:CE:99:BC:C0:C6"
+    ]
+  }
+}]
